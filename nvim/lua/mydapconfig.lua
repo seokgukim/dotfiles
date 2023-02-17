@@ -18,23 +18,9 @@ function M.setup()
 			stopOnEntry = false,
 			args = {},
 			runInTerminal = false,
-			preLaunchTask = "build program",
 		}
 	}
 
-	dap.configurations.shell = {
-	  {
-		name = "build program",
-		type = "shell",
-		command = "nvim --headless -c 'cd ${workspaceFolder}' -c 'CMakeBuild' -c 'qa'",
-		problemMatcher = {},
-		group = {
-		  kind = "build",
-		  isDefault = true
-		}
-	  }
-	}
-	
 	dap.adapters.python = {
 	  type = 'executable',
 	  command = 'python',
