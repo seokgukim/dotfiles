@@ -77,6 +77,7 @@ require('dapui').setup()
 require("nvim-dap-virtual-text").setup()
 
 EOF
+let g:dap_virtual_text = v:true
 nnoremap <silent> <tab> :NvimTreeToggle<CR>
 nnoremap <silent> <C-tab> :NvimTreeFocus<CR>
 
@@ -85,10 +86,9 @@ syntax on
 set termguicolors
 colorscheme catppuccin-frappe
 
-" Git and etc
-set clipboard+=unnamedplus
+" Git
 let g:fugitive_git_executable = 'C:\Program Files\Git\bin\git.exe'
-let g:dap_virtual_text = v:true
+
 
 " CtrlP option
 let g:ctrlp_map = '<c-p>'
@@ -146,19 +146,9 @@ nnoremap <silent> <C-y> :red<CR>
 inoremap <silent> <C-y> <Esc>:red<CR>
 
 " ClipBoard
+set clipboard+=unnamedplus
 nnoremap <silent> <C-c> "+y<CR>
-inoremap <silent> <C-c> <Esc>"+y<CR>
+vnoremap <silent> <C-c> "+y<CR>
 nnoremap <silent> <C-v> "+p<CR>
+vnoremap <silent> <C-v> "+p<CR>
 inoremap <silent> <C-v> <Esc>"+p<CR>
-let g:clipboard = {
-    \   'name': 'win32yank-wsl',
-    \   'copy': {
-    \      '+': 'C:/tools/neovim/nvim-win64/bin/win32yank.exe -i --crlf',
-    \      '*': 'C:/tools/neovim/nvim-win64/bin/win32yank.exe -i --crlf',
-    \    },
-    \   'paste': {
-    \      '+': 'C:/tools/neovim/nvim-win64/bin/win32yank.exe -o --lf',
-    \      '*': 'C:/tools/neovim/nvim-win64/bin/win32yank.exe -o --lf',
-    \   },
-    \   'cache_enabled': 0,
-    \ }
