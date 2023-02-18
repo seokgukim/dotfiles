@@ -15,9 +15,9 @@ function M.setup()
 			request = "launch",
 			program = "C:/tools/neovim/nvim-win64/bin/Debug/Debug/Problem.exe",
 			cwd = '${workspaceFolder}',
+			runInTerminal = true,
 			stopOnEntry = false,
 			args = {},
-			runInTerminal = false,
 		}
 	}
 
