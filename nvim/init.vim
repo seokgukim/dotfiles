@@ -12,14 +12,11 @@ Plug 'ryanoasis/vim-devicons'
 Plug 'ctrlpvim/ctrlp.vim'
 "Coc linter
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-"Debug
-Plug 'mfussenegger/nvim-dap'
-Plug 'rcarriga/nvim-dap-ui'
-Plug 'mfussenegger/nvim-dap-python'
-Plug 'theHamsta/nvim-dap-virtual-text'
+"CP Helper
+Plug 'MunifTanjim/nui.nvim'
+Plug 'xeluxee/competitest.nvim'
 "git and Build
 Plug 'tpope/vim-fugitive'
-Plug 'cdelledonne/vim-cmake'
 
 call plug#end()
 
@@ -49,35 +46,9 @@ require("nvim-tree").setup({
   },
 })
 
-local dap_breakpoint = {
-	error = {
-		text = "🔴",
-		texthl = "LspDiagnosticsSignError",
-		linehl = "",
-		numhl = "",
-	},
-	rejected = {
-		text = "🚫",
-		texthl = "LspDiagnosticsSignHint",
-		linehl = "",
-		numhl = "",
-	},
-	stopped = {
-		text = "⭐️",
-		texthl = "LspDiagnosticsSignInformation",
-		linehl = "DiagnosticUnderlineInfo",
-		numhl = "LspDiagnosticsSignInformation",
-	},
-}
-
-vim.fn.sign_define("DapBreakpoint", dap_breakpoint.error)
-vim.fn.sign_define("DapStopped", dap_breakpoint.stopped)
-vim.fn.sign_define("DapBreakpointRejected", dap_breakpoint.rejected)
-require('dapui').setup()
-require("nvim-dap-virtual-text").setup()
+require('competitest').setup()
 
 EOF
-let g:dap_virtual_text = v:true
 nnoremap <silent> <tab> :NvimTreeToggle<CR>
 nnoremap <silent> <C-tab> :NvimTreeFocus<CR>
 
@@ -107,15 +78,6 @@ nnoremap <silent> <C-ScrollWheelDown> :call AdjustFontSize(-1)<CR>
 inoremap <silent> <C-ScrollWheelUp> <Esc>:call AdjustFontSize(1)<CR>a
 inoremap <silent> <C-ScrollWheelDown> <Esc>:call AdjustFontSize(-1)<CR>a
 
-" DAP UI
-let g:dapui_mappings = 0
-let g:dapui_sidebar_position = 'left'
-let g:dapui_winnr_width = 40
-let g:dapui_winnr_height = 15
-
-" debugging
-lua require('mydapconfig').setup()
-
 " COC Config
 " Add languages you want to have LSP support for
 let g:coc_global_extensions = [
@@ -124,16 +86,14 @@ let g:coc_global_extensions = [
 	\ 'coc-python',
 	\ 'coc-lua'
 	\ ]
-  
-" DAP key mappings
-nnoremap <silent> <F2> :lua require('dapui').toggle()<CR>
-nnoremap <silent> <F5> :lua require ('dap').continue()<CR>
-nnoremap <silent> <F6> :CMakeBuild<CR>
-nnoremap <silent> <F9> :lua require('dap').toggle_breakpoint()<CR>
-nnoremap <silent> <F10> :lua require ('dap').step_over()<CR>
-nnoremap <silent> <F11> :lua require ('dap').step_into()<CR>
-nnoremap <silent> <F12> :lua require ('dap').step_out()<CR>
-nnoremap <silent> <leader>lp :lua require('dap').run_last()<CR>
+
+"CP Helper
+cd C:\Users\rokja\ps
+nnoremap <silent> <F5> :CompetiTestRun<CR>
+nnoremap <silent> <F6> :CompetiTestRunNE<CR>
+nnoremap <silent> <F2> :CompetiTestAdd<CR>
+nnoremap <silent> <F3> :CompetiTestEdit<CR>
+nnoremap <silent> <F4> :CompetiTestDelete<CR>
 
 " ShortCuts
 nnoremap <silent> <C-s> :w<CR>
