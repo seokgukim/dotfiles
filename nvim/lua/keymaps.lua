@@ -18,7 +18,7 @@ vim.api.nvim_set_keymap('i', '<C-ScrollWheelUp>', '<Esc>:lua adjust_fontsize(1)<
 vim.api.nvim_set_keymap('i', '<C-ScrollWheelDown>', '<Esc>:lua adjust_fontsize(-1)<CR>', { noremap = true, silent = true })
 
 -- CP Helper
-vim.cmd('cd C:\\Users\\rokja\\ps')
+vim.cmd('cd C:\\')
 vim.api.nvim_set_keymap('n', '<leader>cr', ':CompetiTestRun<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>cn', ':CompetiTestRunNE<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>ca', ':CompetiTestAdd<CR>', { noremap = true, silent = true })
