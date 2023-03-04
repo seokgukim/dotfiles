@@ -88,6 +88,7 @@ require("competitest").setup()
 --DAP Config
 require("mydapconfig").setup()
 require("dapui").setup()
+require("nvim-dap-virtual-text").setup()
 
 vim.fn.sign_define("DapBreakpoint",{ text ="🔴", texthl ="LspDiagnosticsSignError", linehl ="", numhl =""})
 vim.fn.sign_define("DapStopped",{ text ="▶️", texthl ="LspDiagnosticsSignInformation", linehl ="DiagnosticUnderlineInfo", numhl ="LspDiagnosticsSignInformation"})
