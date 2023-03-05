@@ -9,9 +9,9 @@ function adjust_fontsize(amount)
   if fontsize < 6 then
     fontsize = 6
   end
-  vim.cmd('set guifont=Anonymice\\ NF:h' .. fontsize)
+  vim.cmd('set guifont=D2Coding\\ ligature:h' .. fontsize)
 end
-vim.cmd('set guifont=Anonymice\\ NF:h12')
+vim.cmd('set guifont=D2Coding\\ ligature:h12')
 vim.api.nvim_set_keymap('n', '<C-ScrollWheelUp>', ':lua adjust_fontsize(1)<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-ScrollWheelDown>', ':lua adjust_fontsize(-1)<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('i', '<C-ScrollWheelUp>', '<Esc>:lua adjust_fontsize(1)<CR>', { noremap = true, silent = true })
@@ -26,7 +26,7 @@ vim.api.nvim_set_keymap('n', '<leader>ce', ':CompetiTestEdit<CR>', { noremap = t
 vim.api.nvim_set_keymap('n', '<leader>cd', ':CompetiTestDelete<CR>', { noremap = true, silent = true })
 
 -- DAP
-vim.api.nvim_set_keymap('n', '<leader>cp', ':!g++ -g -o %:r %<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>cp', ':w<CR> :!g++ -g -o %:r %<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<F2>', ':lua require("dapui").toggle()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<F5>', ':lua require("dap").continue()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<F10>', ':lua require("dap").step_over()<CR>', { noremap = true, silent = true })
