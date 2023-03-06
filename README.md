@@ -1,2 +1,2 @@
 # SeokguKim's dotfiles
-Here are mydotfiles, mostly for nvim
+Here are my dotfiles, mostly for nvim.
