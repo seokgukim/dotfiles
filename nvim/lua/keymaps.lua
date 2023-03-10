@@ -9,9 +9,9 @@ function adjust_fontsize(amount)
   if fontsize < 6 then
     fontsize = 6
   end
-  vim.cmd('set guifont=D2Coding\\ ligature:h' .. fontsize)
+  vim.cmd('set guifont=FuraMono\\ NFM:h' .. fontsize)
 end
-vim.cmd('set guifont=D2Coding\\ ligature:h12')
+vim.cmd('set guifont=FuraMono\\ NFM:h12')
 vim.api.nvim_set_keymap('n', '<C-ScrollWheelUp>', ':lua adjust_fontsize(1)<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-ScrollWheelDown>', ':lua adjust_fontsize(-1)<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('i', '<C-ScrollWheelUp>', '<Esc>:lua adjust_fontsize(1)<CR>', { noremap = true, silent = true })
