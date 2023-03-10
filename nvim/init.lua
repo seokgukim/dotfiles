@@ -13,11 +13,11 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
 	--Theme
-	{ "catppuccin/nvim", name = "catppuccin" },
+	"EdenEast/nightfox.nvim",
 	--NvimTree and Status Line
 	"nvim-tree/nvim-tree.lua",
 	"nvim-tree/nvim-web-devicons",
-	"NTBBloodbath/galaxyline.nvim",
+	"bluz71/vim-mistfly-statusline",
 	--cp helper
 	"MunifTanjim/nui.nvim",
 	"xeluxee/competitest.nvim",
@@ -25,6 +25,7 @@ require("lazy").setup({
 	"mattn/emmet-vim",
 	--Git
 	"tpope/vim-fugitive",
+	"airblade/vim-gitgutter",
 	--DAP
 	"mfussenegger/nvim-dap",
 	"rcarriga/nvim-dap-ui",
@@ -92,8 +93,7 @@ require("nvim-tree").setup({
   },
 })
 
-require("nvim-web-devicons")
-require("galaxyline.themes.eviline")
+require("nvim-web-devicons").setup()
 --CP helper
 require("competitest").setup()
 
@@ -177,7 +177,7 @@ require("lspconfig")["clangd"].setup {
 -- Theme
 vim.cmd("syntax on")
 vim.opt.termguicolors = true
-vim.cmd("colorscheme catppuccin-frappe")
+vim.cmd("colorscheme Duskfox")
 
 -- Git
 vim.g.fugitive_git_executable = "C:/Program Files/Git/bin/git.exe"
