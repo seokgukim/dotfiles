@@ -14,10 +14,9 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
 	--Theme
 	"EdenEast/nightfox.nvim",
-	--NvimTree and Status Line
-	"nvim-tree/nvim-tree.lua",
+	--Status
 	"nvim-tree/nvim-web-devicons",
-	"bluz71/vim-mistfly-statusline",
+	"bluz71/nvim-linefly",
 	--cp helper
 	"MunifTanjim/nui.nvim",
 	"xeluxee/competitest.nvim",
@@ -70,35 +69,15 @@ require"nvim-treesitter.configs".setup {
 vim.g.ackprg = "ag --vimgrep"
 
 --NvimTree and Status Line
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
 
 vim.opt.termguicolors = true
-
-require("nvim-tree").setup({
-  sort_by = "case_sensitive",
-  view = {
-    width = 30,
-    mappings = {
-      list = {
-        { key = "u", action = "dir_up" },
-      },
-    },
-  },
-  renderer = {
-    group_empty = true,
-  },
-  filters = {
-    dotfiles = true,
-  },
-})
 
 require("nvim-web-devicons").setup()
 --CP helper
 require("competitest").setup()
 
 --DAP Config
-require("mydapconfig").setup()
+require("dapconfig").setup()
 require("dapui").setup()
 require("nvim-dap-virtual-text").setup()
 
@@ -177,7 +156,10 @@ require("lspconfig")["clangd"].setup {
 -- Theme
 vim.cmd("syntax on")
 vim.opt.termguicolors = true
-vim.cmd("colorscheme Duskfox")
+vim.cmd("colorscheme Nordfox")
+vim.cmd("set tabstop=4")
+vim.cmd("set shiftwidth=4")
+vim.cmd("set expandtab")
 
 -- Git
 vim.g.fugitive_git_executable = "C:/Program Files/Git/bin/git.exe"

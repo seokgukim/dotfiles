@@ -1,7 +1,3 @@
--- NvimTree
-vim.api.nvim_set_keymap('n', '<Tab>', ':NvimTreeToggle<CR>', {silent = true})
-vim.api.nvim_set_keymap('n', '<C-tab>', ':NvimTreeFocus<CR>', {silent = true})
-
 -- Font
 local fontsize = 12
 function adjust_fontsize(amount)
@@ -35,6 +31,8 @@ vim.api.nvim_set_keymap('n', '<F9>', ':lua require("dap").toggle_breakpoint()<CR
 vim.api.nvim_set_keymap('n', '<leader><F9>', ':lua require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))<CR>', {silent = true})
 
 -- ShortCuts
+vim.api.nvim_set_keymap('n', '<leader>h', ':cd C:\\<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>f', ':Files<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('i', '<C-s>', '<Esc>:w<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-q>', ':q<CR>', { noremap = true, silent = true })
