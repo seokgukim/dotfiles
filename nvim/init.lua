@@ -31,9 +31,11 @@ require("lazy").setup({
 	"theHamsta/nvim-dap-virtual-text",
 	--TreeSitter
 	"nvim-treesitter/nvim-treesitter",
-	--fzf
-	"junegunn/fzf",
-	"junegunn/fzf.vim",
+	--Telescope
+	{
+    'nvim-telescope/telescope.nvim', tag = '0.1.1',
+      dependencies = { 'nvim-lua/plenary.nvim' }
+    },
 	--Auto completion
 	"neovim/nvim-lspconfig",
 	 { "hrsh7th/nvim-cmp",
@@ -48,6 +50,14 @@ require("lazy").setup({
 			"hrsh7th/cmp-nvim-lua",
 			"dcampos/nvim-snippy"
 		},
+	},
+	--TabLine
+	{'romgrk/barbar.nvim',
+		dependencies = {
+		'lewis6991/gitsigns.nvim', -- OPTIONAL: for git status
+		},
+		init = function() vim.g.barbar_auto_setup = false end,
+		version = '^1.0.0', -- optional: only update when a new 1.x version is released
 	},
 })
 
@@ -74,7 +84,11 @@ vim.opt.termguicolors = true
 
 require("nvim-web-devicons").setup()
 --CP helper
-require("competitest").setup()
+require("competitest").setup{
+	template_file = {
+		cpp = "C:/Users/rokja/ps/template/basic.cpp",
+	}
+}
 
 --DAP Config
 require("dapconfig").setup()
@@ -160,6 +174,8 @@ vim.cmd("colorscheme Nordfox")
 vim.cmd("set tabstop=4")
 vim.cmd("set shiftwidth=4")
 vim.cmd("set expandtab")
+vim.cmd("set number")
+require("barbar").setup{animation = false,}
 
 -- Git
 vim.g.fugitive_git_executable = "C:/Program Files/Git/bin/git.exe"
