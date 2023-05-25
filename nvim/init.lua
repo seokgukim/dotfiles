@@ -75,10 +75,7 @@ require"nvim-treesitter.configs".setup {
   },
 }
 
---fzf Ag
-vim.g.ackprg = "ag --vimgrep"
-
---NvimTree and Status Line
+--Status Line
 
 vim.opt.termguicolors = true
 
