@@ -6,7 +6,7 @@ function M.setup()
 	dap.adapters.cppdbg = {
 		id = "cppdbg",
 		type = "executable",
-		command = "C:/Users/rokja/.vscode/extensions/ms-vscode.cpptools-1.15.4-win32-x64/debugAdapters/bin/OpenDebugAD7.exe",
+		command = "/home/seokgukim/cpptools/debugAdapters/bin/OpenDebugAD7",
 		options = {
 			detached = false
 		},
@@ -20,7 +20,7 @@ function M.setup()
 			cwd = "${fileDirname}",
 			stopAtEntry = false,
 			MIMode = "gdb",
-			MIDebuggerPath = "C:/msys64/mingw64/bin/gdb.exe",
+			MIDebuggerPath = "/usr/bin/gdb",
 			setupCommands = {  
 				{	 
 					text = '-enable-pretty-printing',

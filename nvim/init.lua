@@ -17,9 +17,6 @@ require("lazy").setup({
 	--Status
 	"nvim-tree/nvim-web-devicons",
 	"bluz71/nvim-linefly",
-	--cp helper
-	"MunifTanjim/nui.nvim",
-	"xeluxee/competitest.nvim",
 	--Emmet
 	"mattn/emmet-vim",
 	--Git
@@ -27,13 +24,15 @@ require("lazy").setup({
 	"airblade/vim-gitgutter",
 	--DAP
 	"mfussenegger/nvim-dap",
-	"rcarriga/nvim-dap-ui",
+	{ "rcarriga/nvim-dap-ui",
+		dependencies = {'nvim-neotest/nvim-nio'}
+	},
 	"theHamsta/nvim-dap-virtual-text",
 	--TreeSitter
 	"nvim-treesitter/nvim-treesitter",
 	--Telescope
 	{
-    'nvim-telescope/telescope.nvim', tag = '0.1.1',
+    'nvim-telescope/telescope.nvim', tag = '0.1.8',
       dependencies = { 'nvim-lua/plenary.nvim' }
     },
 	--Auto completion
@@ -48,7 +47,8 @@ require("lazy").setup({
 			"hrsh7th/cmp-nvim-lsp-signature-help",
 			"hrsh7th/cmp-nvim-lsp-document-symbol",
 			"hrsh7th/cmp-nvim-lua",
-			"dcampos/nvim-snippy"
+			"dcampos/nvim-snippy",
+			"dcampos/cmp-snippy",
 		},
 	},
 	--TabLine
@@ -59,6 +59,8 @@ require("lazy").setup({
 		init = function() vim.g.barbar_auto_setup = false end,
 		version = '^1.0.0', -- optional: only update when a new 1.x version is released
 	},
+    -- RSI
+    'tpope/vim-rsi',
 })
 
 --TreeSitter
@@ -80,12 +82,6 @@ require"nvim-treesitter.configs".setup {
 vim.opt.termguicolors = true
 
 require("nvim-web-devicons").setup()
---CP helper
-require("competitest").setup{
-	template_file = {
-		cpp = "C:/Users/rokja/ps/template/basic.cpp",
-	}
-}
 
 --DAP Config
 require("dapconfig").setup()
@@ -122,7 +118,7 @@ cmp.setup({
     sources = cmp.config.sources({
 		{ name = "nvim_lsp" },
 		{ name = "snippy" }, -- For snippy users.
-    }, 
+    },
 	{
 		{ name = "buffer" },
     })
@@ -156,18 +152,23 @@ cmp.setup.cmdline(":", {
     })
 })
 
-  -- Set up lspconfig.
+
+-- LSP
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
-  -- Replace <YOUR_LSP_SERVER> with each lsp server you"ve enabled.
- 
-require("lspconfig")["clangd"].setup {
-	capabilities = capabilities
+
+local lsp = require("lspconfig")
+lsp.clangd.setup{
+    capabilities = capabilities,
+}
+lsp.pyright.setup{
+    capabilities = capabilities,
 }
 
+
 -- Theme
+vim.cmd("colorscheme nordfox")
 vim.cmd("syntax on")
 vim.opt.termguicolors = true
-vim.cmd("colorscheme Nordfox")
 vim.cmd("set tabstop=4")
 vim.cmd("set shiftwidth=4")
 vim.cmd("set expandtab")
@@ -175,7 +176,7 @@ vim.cmd("set number")
 require("barbar").setup{animation = false,}
 
 -- Git
-vim.g.fugitive_git_executable = "C:/Program Files/Git/bin/git.exe"
+vim.g.fugitive_git_executable = "/usr/bin/git"
 
 -- Clipboard
 vim.opt.clipboard = "unnamedplus"
