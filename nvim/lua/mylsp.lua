@@ -67,6 +67,9 @@ function M.setup()
     lsp.pyright.setup{
         capabilities = capabilities,
     }
+    lsp.ruby_lsp.setup{
+        capabilities = capabilities,
+    }
     --lsp.harper_ls.setup{
     --    capabilities = capabilities,
     --}

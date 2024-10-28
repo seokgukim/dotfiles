@@ -13,6 +13,7 @@ function M.setup()
 
     --Debug
     local dap = require("dap")
+
     dap.adapters.cppdbg = {
         id = "cppdbg",
         type = "executable",
@@ -38,6 +39,33 @@ function M.setup()
                     ignoreFailures = false 
                 },
             },
+        },
+    }
+
+    require("dap-python").setup("python")
+
+    dap.adapters.ruby = function(callback, config)
+        callback {
+            type = "server",
+            host = "127.0.0.1",
+            port = 34576,
+            executable = {
+                command = "rdbg",
+                args = {
+                    "--open", "--port", "34576", "-c", "--", config.command, config.script, "<", config.input_file
+                },
+            },
+        }
+    end
+    dap.configurations.ruby = {
+        {
+            type = "ruby",
+            name = "debug current file",
+            request = "attach",
+            localfs = true,
+            command = "ruby",
+            script = "${file}",
+            input_file = "${fileDirname}/ruby_input.txt",
         },
     }
 

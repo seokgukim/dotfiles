@@ -24,6 +24,8 @@ require("lazy").setup({
 	"airblade/vim-gitgutter",
 	--DAP
 	"mfussenegger/nvim-dap",
+	"mfussenegger/nvim-dap-python",
+    	"suketa/nvim-dap-ruby",
 	{ 
         "rcarriga/nvim-dap-ui",
 		dependencies = {'nvim-neotest/nvim-nio'}
