@@ -23,14 +23,14 @@ require("lazy").setup({
 	"tpope/vim-fugitive",
 	"airblade/vim-gitgutter",
 	--DAP
-	"mfussenegger/nvim-dap",
-	"mfussenegger/nvim-dap-python",
-    	"suketa/nvim-dap-ruby",
-	{ 
-        "rcarriga/nvim-dap-ui",
-		dependencies = {'nvim-neotest/nvim-nio'}
-	},
-	"theHamsta/nvim-dap-virtual-text",
+	-- "mfussenegger/nvim-dap",
+	-- "mfussenegger/nvim-dap-python",
+    -- "suketa/nvim-dap-ruby",
+	-- { 
+    --     "rcarriga/nvim-dap-ui",
+	-- 	dependencies = {'nvim-neotest/nvim-nio'}
+	-- },
+	-- "theHamsta/nvim-dap-virtual-text",
 	--TreeSitter
 	"nvim-treesitter/nvim-treesitter",
 	--Telescope
@@ -66,6 +66,8 @@ require("lazy").setup({
 	},
     -- RSI
     'tpope/vim-rsi',
+    -- Copilot
+    'github/copilot.vim'
 })
 
 
@@ -79,7 +81,7 @@ require("mylsp").setup()
 require("appearance").setup()
 
 --DAP
-require("mydap").setup()
+--require("mydap").setup()
 
 --Keymaps
 require("keymaps").setup()
