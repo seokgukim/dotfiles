@@ -10,13 +10,25 @@ function M.setup()
         elseif fontsize > 30 then
             fontsize = 30;
         end
-        vim.cmd('set guifont=0xProto\\ Nerd\\ Font:h' .. fontsize)
+        vim.cmd('set guifont=vim.o.guifont:h' .. fontsize)
     end
-    vim.cmd('set guifont=0xProto\\ Nerd\\ Font:h12')
     vim.api.nvim_set_keymap('n', '<C-=>', ':lua adjust_fontsize(1)<CR>', { noremap = true, silent = true })
     vim.api.nvim_set_keymap('n', '<C-->', ':lua adjust_fontsize(-1)<CR>', { noremap = true, silent = true })
     vim.api.nvim_set_keymap('i', '<C-=>', '<Esc>:lua adjust_fontsize(1)<CR>', { noremap = true, silent = true })
     vim.api.nvim_set_keymap('i', '<C-->', '<Esc>:lua adjust_fontsize(-1)<CR>', { noremap = true, silent = true })
+
+    -- Clipboard
+    vim.api.nvim_set_keymap('n', '<leader>y', '"+y', { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('v', '<leader>y', '"+y', { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('n', '<leader>p', '"+p', { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('v', '<leader>p', '"+p', { noremap = true, silent = true })
+
+    -- Buffers
+    vim.api.nvim_set_keymap('n', '<leader>bd', ':bd<CR>', { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('n', '<leader>bn', ':bnext<CR>', { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('n', '<leader>bp', ':bprevious<CR>', { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('n', '<leader>bl', ':buffers<CR>:b ', { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('n', '<leader>bnw', ':enew<CR>', { noremap = true, silent = true })
 end
 
 return M
