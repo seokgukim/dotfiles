@@ -30,6 +30,14 @@ function M.setup()
         })
     })
 
+    vim.diagnostic.config({
+        virtual_text = true,
+        signs = true,
+        update_in_insert = false,
+        underline = true,
+        severity_sort = true,
+    })
+
     -- Set configuration for specific filetype.
     cmp.setup.filetype("gitcommit", {
         sources = cmp.config.sources({
