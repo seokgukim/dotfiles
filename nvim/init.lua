@@ -67,7 +67,11 @@ require("lazy").setup({
     -- RSI
     'tpope/vim-rsi',
     -- Copilot
-    'github/copilot.vim'
+    'github/copilot.vim',
+    {
+        'stevearc/conform.nvim',
+        opts = {},
+    },
 })
 
 
@@ -77,11 +81,17 @@ require("utils").setup()
 --LSP
 require("mylsp").setup()
 
+--Formatter
+require("formatter").setup()
+
 --Appearances
 require("appearance").setup()
 
 --DAP
 --require("mydap").setup()
+
+--Copilot
+require("mycopilot").setup()
 
 --Keymaps
 require("keymaps").setup()
