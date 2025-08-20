@@ -1,13 +1,13 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
-    lazypath,
-  })
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		"--branch=stable", -- latest stable release
+		lazypath,
+	})
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -25,9 +25,9 @@ require("lazy").setup({
 	--DAP
 	-- "mfussenegger/nvim-dap",
 	-- "mfussenegger/nvim-dap-python",
-    -- "suketa/nvim-dap-ruby",
-	-- { 
-    --     "rcarriga/nvim-dap-ui",
+	-- "suketa/nvim-dap-ruby",
+	-- {
+	--     "rcarriga/nvim-dap-ui",
 	-- 	dependencies = {'nvim-neotest/nvim-nio'}
 	-- },
 	-- "theHamsta/nvim-dap-virtual-text",
@@ -35,14 +35,15 @@ require("lazy").setup({
 	"nvim-treesitter/nvim-treesitter",
 	--Telescope
 	{
-        'nvim-telescope/telescope.nvim', tag = '0.1.8',
-        dependencies = { 'nvim-lua/plenary.nvim' }
-    },
+		"nvim-telescope/telescope.nvim",
+		tag = "0.1.8",
+		dependencies = { "nvim-lua/plenary.nvim" },
+	},
 	--Auto completion
 	"neovim/nvim-lspconfig",
-	 { 
-        "hrsh7th/nvim-cmp",
-	    dependencies = {
+	{
+		"hrsh7th/nvim-cmp",
+		dependencies = {
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-buffer",
 			"hrsh7th/cmp-path",
@@ -57,23 +58,24 @@ require("lazy").setup({
 	},
 	--TabLine
 	{
-        'romgrk/barbar.nvim',
+		"romgrk/barbar.nvim",
 		dependencies = {
-		'lewis6991/gitsigns.nvim', -- OPTIONAL: for git status
+			"lewis6991/gitsigns.nvim", -- OPTIONAL: for git status
 		},
-		init = function() vim.g.barbar_auto_setup = false end,
-		version = '^1.0.0', -- optional: only update when a new 1.x version is released
+		init = function()
+			vim.g.barbar_auto_setup = false
+		end,
+		version = "^1.0.0", -- optional: only update when a new 1.x version is released
 	},
-    -- RSI
-    'tpope/vim-rsi',
-    -- Copilot
-    'github/copilot.vim',
-    {
-        'stevearc/conform.nvim',
-        opts = {},
-    },
+	-- RSI
+	"tpope/vim-rsi",
+	-- Copilot
+	"github/copilot.vim",
+	{
+		"stevearc/conform.nvim",
+		opts = {},
+	},
 })
-
 
 --Utils
 require("utils").setup()
