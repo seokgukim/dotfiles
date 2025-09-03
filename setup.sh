@@ -38,7 +38,7 @@ echo "Linked .vimrc to /root/.vimrc"
 
 # Install Node.js (latest LTS)
 echo "Installing Node.js..."
-NODEJS_VERSION="v22.9.0"  # Current LTS as of Sept 2025
+NODEJS_VERSION="v22.19.0"  # Current LTS as of Sept 2025
 NODEJS_URL="https://nodejs.org/dist/${NODEJS_VERSION}/node-${NODEJS_VERSION}-linux-x64.tar.xz"
 
 cd /tmp
