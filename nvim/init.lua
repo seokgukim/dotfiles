@@ -78,22 +78,22 @@ require("lazy").setup({
 })
 
 --Utils
-require("utils").setup()
+require("config.utils").setup()
 
 --LSP
-require("mylsp").setup()
+require("config.lsp").setup()
 
 --Formatter
-require("formatter").setup()
+require("config.formatter").setup()
 
 --Appearances
-require("appearance").setup()
+require("config.appearance").setup()
 
 --DAP
---require("mydap").setup()
+--require("dap").setup()
 
 --Copilot
-require("mycopilot").setup()
+require("config.copilot").setup()
 
 --Keymaps
-require("keymaps").setup()
+require("config.keymaps").setup()
