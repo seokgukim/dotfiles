@@ -53,7 +53,7 @@ echo "Node.js installed: $(node --version)"
 
 # Install Neovim
 echo "Installing Neovim..."
-NVIM_VERSION="v0.10.1"  # Latest stable release
+NVIM_VERSION="v0.11.4"  # Latest stable release
 NVIM_URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux64.tar.gz"
 
 cd /tmp
