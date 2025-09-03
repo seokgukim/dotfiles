@@ -4,6 +4,13 @@ set -e  # Exit on any error
 
 echo "Starting dotfiles setup..."
 
+# Detect system architecture
+if [ "$(uname -m)" = "x86_64" ]; then
+    ARCH="x64"
+else
+    ARCH="arm64"
+fi
+
 # Detect OS
 if command -v apt &> /dev/null; then
     PKG_MANAGER="apt"
@@ -39,7 +46,8 @@ echo "Linked .vimrc to /root/.vimrc"
 # Install Node.js (latest LTS)
 echo "Installing Node.js..."
 NODEJS_VERSION="v22.19.0"  # Current LTS as of Sept 2025
-NODEJS_URL="https://nodejs.org/dist/${NODEJS_VERSION}/node-${NODEJS_VERSION}-linux-x64.tar.xz"
+NODEJS_TARGET="node-${NODEJS_VERSION}-linux-${ARCH}.tar.xz"
+NODEJS_URL="https://nodejs.org/dist/${NODEJS_VERSION}/$NODEJS_TARGET"
 
 cd /tmp
 wget "$NODEJS_URL" -O nodejs.tar.xz
@@ -54,7 +62,11 @@ echo "Node.js installed: $(node --version)"
 # Install Neovim
 echo "Installing Neovim..."
 NVIM_VERSION="v0.11.4"  # Latest stable release
-NVIM_URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux64.tar.gz"
+NVIM_TARGET="nvim-linux-x86_64.tar.gz"
+if [ "$ARCH" = "arm64" ]; then
+    NVIM_TARGET="nvim-linux-arm64.tar.gz"
+fi
+NVIM_URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/$NVIM_TARGET"
 
 cd /tmp
 wget "$NVIM_URL" -O nvim.tar.gz
