@@ -71,7 +71,7 @@ NVIM_URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/$NV
 cd /tmp
 wget "$NVIM_URL" -O nvim.tar.gz
 tar -xf nvim.tar.gz
-mv nvim-linux64 /opt/nvim
+mv nvim-linux-* /opt/nvim
 ln -sf /opt/nvim/bin/nvim /usr/bin/nvim
 
 echo "Neovim installed: $(nvim --version | head -1)"
