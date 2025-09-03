@@ -52,7 +52,7 @@ NODEJS_URL="https://nodejs.org/dist/${NODEJS_VERSION}/$NODEJS_TARGET"
 cd /tmp
 wget "$NODEJS_URL" -O nodejs.tar.xz
 tar -xf nodejs.tar.xz
-mv "node-${NODEJS_VERSION}-linux-x64" /opt/nodejs
+mv "node-${NODEJS_VERSION}-linux-${ARCH}" /opt/nodejs
 ln -sf /opt/nodejs/bin/node /usr/bin/node
 ln -sf /opt/nodejs/bin/npm /usr/bin/npm
 ln -sf /opt/nodejs/bin/npx /usr/bin/npx
