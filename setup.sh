@@ -28,6 +28,7 @@ echo "Detected package manager: $PKG_MANAGER"
 # Install vim-gtk
 echo "Installing vim-gtk..."
 if [ "$PKG_MANAGER" = "apt" ]; then
+    export DEBIAN_FRONTEND=noninteractive
     apt update && apt install -y vim-gtk3 curl wget tar xz-utils
 elif [ "$PKG_MANAGER" = "pacman" ]; then
     pacman -Syu --noconfirm gvim curl wget tar xz
