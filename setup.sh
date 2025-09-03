@@ -21,9 +21,9 @@ echo "Detected package manager: $PKG_MANAGER"
 # Install vim-gtk
 echo "Installing vim-gtk..."
 if [ "$PKG_MANAGER" = "apt" ]; then
-    apt update && apt install -y vim-gtk3 curl wget tar
+    apt update && apt install -y vim-gtk3 curl wget tar xz-utils
 elif [ "$PKG_MANAGER" = "pacman" ]; then
-    pacman -Syu --noconfirm gvim curl wget tar
+    pacman -Syu --noconfirm gvim curl wget tar xz
 elif [ "$PKG_MANAGER" = "dnf" ]; then
     dnf install -y vim-X11 curl wget tar
 fi
@@ -126,22 +126,37 @@ npm install -g \
 
 # Install Python packages for formatters
 if command -v pip3 &> /dev/null; then
-    pip3 install \
-        black \
-        isort \
-        flake8
+    # If pip has --break-system-packages option, use it
+    if pip3 install --help | grep -q -- '--break-system-packages'; then
+        pip3 install --break-system-packages \
+            black \
+            isort \
+            flake8
+    else
+        pip3 install \
+            black \
+            isort \
+            flake8
+    fi
 elif command -v pip &> /dev/null; then
-    pip install \
-        black \
-        isort \
-        flake8
+    if pip install --help | grep -q -- '--break-system-packages'; then
+        pip install --break-system-packages \
+            black \
+            isort \
+            flake8
+    else
+        pip install \
+            black \
+            isort \
+            flake8
+    fi
 else
     echo "Python pip not found. Install Python and pip manually for Python formatters."
 fi
 
 # Install Ruby gems for formatters and language servers
 if command -v gem &> /dev/null; then
-    gem install ruby_lsp
+    gem install ruby-lsp
 else
     echo "Ruby gem not found. Install Ruby and gem manually for Ruby formatters."
 fi
