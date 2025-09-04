@@ -28,7 +28,9 @@ function M.setup()
 	vim.api.nvim_set_keymap("n", "<leader>bn", ":bnext<CR>", { noremap = true, silent = true })
 	vim.api.nvim_set_keymap("n", "<leader>bp", ":bprevious<CR>", { noremap = true, silent = true })
 	vim.api.nvim_set_keymap("n", "<leader>bl", ":buffers<CR>:b ", { noremap = true, silent = true })
-	vim.api.nvim_set_keymap("n", "<leader>bnw", ":enew<CR>", { noremap = true, silent = true })
+	for i = 1, 9 do
+		vim.api.nvim_set_keymap("n", "<leader>b" .. i, ":buffer " .. i .. "<CR>", { noremap = true, silent = true })
+	end
 end
 
 return M
