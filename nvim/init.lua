@@ -27,8 +27,8 @@ require("lazy").setup({
 	-- "mfussenegger/nvim-dap-python",
 	-- "suketa/nvim-dap-ruby",
 	-- {
-	--     "rcarriga/nvim-dap-ui",
-	-- 	dependencies = {'nvim-neotest/nvim-nio'}
+	-- 	"rcarriga/nvim-dap-ui",
+	-- 	dependencies = { "nvim-neotest/nvim-nio" },
 	-- },
 	-- "theHamsta/nvim-dap-virtual-text",
 	--TreeSitter
@@ -90,7 +90,7 @@ require("config.formatter").setup()
 require("config.appearance").setup()
 
 --DAP
---require("dap").setup()
+-- require("config.dap").setup()
 
 --Copilot
 require("config.copilot").setup()
