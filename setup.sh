@@ -2,7 +2,49 @@
 
 set -e  # Exit on any error
 
-echo "Starting dotfiles setup..."
+# Function to print messages with a prefix and logging
+console_output() {
+    echo "[seokgukim_setup|$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "/var/log/seokgukim_setup.log"
+}
+
+console_output "Starting dotfiles setup..."
+
+# Assume the script is run with sudo or as root
+if [ "$EUID" -ne 0 ]; then
+    console_output "Please run as root or with sudo."
+    exit 1
+fi
+
+# Get the user who ran the script (even with sudo) - MOVED TO TOP
+if [ -n "$SUDO_USER" ]; then
+    TARGET_USER="$SUDO_USER"
+    TARGET_HOME="/home/$SUDO_USER"
+elif [ -z "$USER" ]; then
+    console_output "Error: USER environment variable is not set"
+    exit 1
+elif [ "$USER" = "root" ]; then
+    TARGET_USER="root"
+    TARGET_HOME="/root"
+    # For root, show a confirmation message to ask if they want to proceed
+    console_output "Warning: You are running this script as root. Proceeding may affect the root user's environment."
+    read -r -p "Do you want to continue? (y/n): " response < /dev/tty
+    if [[ "$response" != "y" && "$response" != "Y" ]]; then
+        console_output "Aborting setup."
+        exit 1
+    fi
+else
+    TARGET_USER="$USER"
+    TARGET_HOME="$HOME"
+fi
+
+# Verify target user exists
+if ! id "$TARGET_USER" &>/dev/null; then
+    console_output "Error: User $TARGET_USER does not exist"
+    exit 1
+fi
+
+# Get current script directory
+SCRIPT_DIR="$TARGET_HOME/dotfiles"
 
 # Detect system architecture
 if [ "$(uname -m)" = "x86_64" ]; then
@@ -19,33 +61,38 @@ elif command -v pacman &> /dev/null; then
 elif command -v dnf &> /dev/null; then
     PKG_MANAGER="dnf"
 else
-    echo "Unsupported package manager. Please install vim-gtk manually."
+    console_output "Unsupported package manager. Please install packages manually."
     exit 1
 fi
 
-echo "Detected package manager: $PKG_MANAGER"
+console_output "Detected package manager: $PKG_MANAGER"
 
 # Install vim-gtk
-echo "Installing vim-gtk..."
+console_output "Installing essential packages..."
 if [ "$PKG_MANAGER" = "apt" ]; then
     export DEBIAN_FRONTEND=noninteractive
-    apt update && apt install -y vim-gtk3 curl wget tar xz-utils
+    apt update && apt install -y sudo curl wget tar xz-utils git vim-gtk3
 elif [ "$PKG_MANAGER" = "pacman" ]; then
-    pacman -Syu --noconfirm gvim curl wget tar xz
+    pacman -Syu --noconfirm sudo curl wget tar xz git gvim
 elif [ "$PKG_MANAGER" = "dnf" ]; then
-    dnf install -y vim-X11 curl wget tar
+    dnf install -y sudo curl wget tar git vim-X11
 fi
 
-# Get current script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the dotfiles repository from GitHub
+if [ -d "$SCRIPT_DIR" ]; then
+    console_output "Dotfiles directory already exists at $SCRIPT_DIR"
+else
+    console_output "Cloning dotfiles repository..."
+    sudo -u "$TARGET_USER" git clone https://github.com/seokgukim/dotfiles.git "$SCRIPT_DIR"
+fi
 
 # Symbolic link .vimrc to /root/.vimrc
-echo "Setting up vim configuration..."
+console_output "Setting up vim configuration..."
 ln -sf "$SCRIPT_DIR/vim/.vimrc" /root/.vimrc
-echo "Linked .vimrc to /root/.vimrc"
+console_output "Linked .vimrc to /root/.vimrc"
 
 # Install Node.js (latest LTS)
-echo "Installing Node.js..."
+console_output "Installing Node.js..."
 NODEJS_VERSION="v22.19.0"  # Current LTS as of Sept 2025
 NODEJS_TARGET="node-${NODEJS_VERSION}-linux-${ARCH}.tar.xz"
 NODEJS_URL="https://nodejs.org/dist/${NODEJS_VERSION}/$NODEJS_TARGET"
@@ -58,10 +105,10 @@ ln -sf /opt/nodejs/bin/node /usr/bin/node
 ln -sf /opt/nodejs/bin/npm /usr/bin/npm
 ln -sf /opt/nodejs/bin/npx /usr/bin/npx
 
-echo "Node.js installed: $(node --version)"
+console_output "Node.js installed: $(node --version)"
 
 # Install Neovim
-echo "Installing Neovim..."
+console_output "Installing Neovim..."
 NVIM_VERSION="v0.11.4"  # Latest stable release
 NVIM_TARGET="nvim-linux-x86_64.tar.gz"
 if [ "$ARCH" = "arm64" ]; then
@@ -75,21 +122,9 @@ tar -xf nvim.tar.gz
 mv nvim-linux-* /opt/nvim
 ln -sf /opt/nvim/bin/nvim /usr/bin/nvim
 
-echo "Neovim installed: $(nvim --version | head -1)"
+console_output "Neovim installed: $(nvim --version | head -1)"
 
-# Get the user who ran the script (even with sudo)
-if [ -n "$SUDO_USER" ]; then
-    TARGET_USER="$SUDO_USER"
-    TARGET_HOME="/home/$SUDO_USER"
-elif [ "$USER" = "root" ]; then
-    TARGET_USER="root"
-    TARGET_HOME="/root"
-else
-    TARGET_USER="$USER"
-    TARGET_HOME="$HOME"
-fi
-
-echo "Setting up Neovim configuration for user: $TARGET_USER"
+console_output "Setting up Neovim configuration for user: $TARGET_USER"
 
 # Create .config directory if it doesn't exist
 sudo -u "$TARGET_USER" mkdir -p "$TARGET_HOME/.config"
@@ -98,37 +133,37 @@ sudo -u "$TARGET_USER" mkdir -p "$TARGET_HOME/.config"
 ln -sf "$SCRIPT_DIR/nvim" "$TARGET_HOME/.config/nvim"
 chown -h "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.config/nvim"
 
-echo "Linked nvim config to $TARGET_HOME/.config/nvim"
+console_output "Linked nvim config to $TARGET_HOME/.config/nvim"
 
 # Install required tools for nvim plugins
-echo "Installing additional tools for Neovim..."
+console_output "Installing additional tools for Neovim..."
 
 # Install tools like ripgrep and python, ruby, clangd, build-essential, docker and etc.
 if [ "$PKG_MANAGER" = "apt" ]; then
     apt install -y \
         ripgrep fd-find \
-        python3 python3-pip \
+        python3 python3-pip python3-venv \
         ruby ruby-dev \
         clangd build-essential \
         docker.io
 elif [ "$PKG_MANAGER" = "pacman" ]; then
     pacman -S --noconfirm \
         ripgrep fd \
-        python python-pip \
+        python python-pip python-virtualenv \
         ruby \
         clang base-devel \
         docker
 elif [ "$PKG_MANAGER" = "dnf" ]; then
     dnf install -y \
         ripgrep fd-find \
-        python3 python3-pip \
+        python3 python3-pip python3-virtualenv \
         ruby ruby-devel \
         clang-tools-extra gcc-c++ make \
         docker
 fi
 
 # Install language servers and formatters via npm
-echo "Installing language servers and formatters..."
+console_output "Installing language servers and formatters..."
 npm install -g \
     typescript-language-server \
     vscode-langservers-extracted \
@@ -164,14 +199,47 @@ elif command -v pip &> /dev/null; then
             flake8
     fi
 else
-    echo "Python pip not found. Install Python and pip manually for Python formatters."
+    console_output "Python pip not found. Install Python and pip manually for Python formatters."
 fi
 
+# Setup rbenv for Ruby version management
+console_output "Setting up rbenv for Ruby version management..."
+
+# Check if rbenv already exists
+if [ ! -d "$TARGET_HOME/.rbenv" ]; then
+    sudo -u "$TARGET_USER" git clone https://github.com/rbenv/rbenv.git "$TARGET_HOME/.rbenv"
+fi
+
+if [ ! -d "$TARGET_HOME/.rbenv/plugins/ruby-build" ]; then
+    sudo -u "$TARGET_USER" git clone https://github.com/rbenv/ruby-build.git "$TARGET_HOME/.rbenv/plugins/ruby-build"
+fi
+
+# Add rbenv to bashrc if not already present
+if ! grep -q 'rbenv' "$TARGET_HOME/.bashrc"; then
+    TEMPORARY_PATH="$TARGET_HOME/.rbenv/bin"
+    echo "export PATH=\"$TEMPORARY_PATH:\$PATH\"" >> "$TARGET_HOME/.bashrc"
+    echo 'eval "$(rbenv init -)"' >> "$TARGET_HOME/.bashrc"
+fi
+
+# Install Ruby with proper environment setup
+console_output "Installing Ruby 3.1.2..."
+if ! sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv versions | grep -q "3.1.2"'; then
+    sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv install 3.1.2'
+fi
+
+sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv global 3.1.2'
+sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv rehash'
+
+# Verify Ruby installation
+RUBY_VERSION=$(sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && ruby -v' 2>/dev/null || echo "Ruby installation failed")
+console_output "Ruby installed: $RUBY_VERSION"
+
 # Install Ruby gems for formatters and language servers
-if command -v gem &> /dev/null; then
-    gem install ruby-lsp
+console_output "Installing Ruby LSP..."
+if echo "$RUBY_VERSION" | grep -q "ruby 3.1.2"; then
+    sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && gem install ruby-lsp' || console_output "Failed to install ruby-lsp"
 else
-    echo "Ruby gem not found. Install Ruby and gem manually for Ruby formatters."
+    console_output "Ruby not properly installed. Skipping ruby-lsp installation."
 fi
 
 # Add current user to docker group
@@ -180,11 +248,15 @@ if ! getent group docker > /dev/null; then
 fi
 usermod -aG docker "$TARGET_USER"
 
-echo "Setup completed successfully!"
-echo ""
-echo "To finish setup:"
-echo "1. Log out and back in for docker group changes to take effect"
-echo "2. Run 'nvim' as $TARGET_USER to trigger lazy.nvim plugin installation"
-echo "3. In nvim, run ':checkhealth' to verify everything is working"
-echo ""
-echo "Note: Some plugins may require additional setup or dependencies."
+# Source bashrc to apply changes for the current session
+source "$TARGET_HOME/.bashrc"
+
+# Final message
+console_output "Setup completed successfully!"
+console_output ""
+console_output "To finish setup:"
+console_output "1. You may have to log out and back in for docker group changes to take effect"
+console_output "2. Run 'nvim' as $TARGET_USER to trigger lazy.nvim plugin installation"
+console_output "3. In nvim, run ':checkhealth' to verify everything is working"
+console_output ""
+console_output "Note: Some plugins may require additional setup or dependencies."
