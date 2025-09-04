@@ -30,7 +30,7 @@ Run the following command to download and execute the setup script.
 This will run `setup.sh` in this repo with root privileges to ensure all dependencies are installed correctly.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SeokguKim/dotfiles/main/setup.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/seokgukim/dotfiles/main/setup.sh | sudo bash
 ```
 
 Or clone the repository and run the setup script with root privileges:
