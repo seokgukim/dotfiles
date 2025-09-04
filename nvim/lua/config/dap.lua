@@ -25,10 +25,16 @@ function M.setup()
 	--Debug
 	local dap = require("dap")
 
+	-- C, C++ DAP
+	dap.adapters.gdb = {
+		type = "executable",
+		command = "gdb",
+		args = { "--interpreter=dap", "--eval-command", "set print pretty on" },
+	}
 	dap.adapters.cppdbg = {
 		id = "cppdbg",
 		type = "executable",
-		command = "/home/seokgukim/cpptools/debugAdapters/bin/OpenDebugAD7",
+		command = os.getenv("HOME") .. "/cpptools/debugAdapters/bin/OpenDebugAD7",
 		options = {
 			detached = false,
 		},
@@ -36,25 +42,20 @@ function M.setup()
 	dap.configurations.cpp = {
 		{
 			id = "Launch",
-			type = "cppdbg",
+			name = "C/C++ Launch file",
+			type = "gdb",
 			request = "launch",
-			program = "${fileDirname}/${fileBasenameNoExtension}.exe",
+			program = "${fileDirname}/${fileBasenameNoExtension}",
 			cwd = "${fileDirname}",
-			stopAtEntry = false,
-			MIMode = "gdb",
-			MIDebuggerPath = "/usr/bin/gdb",
-			setupCommands = {
-				{
-					text = "-enable-pretty-printing",
-					description = "enable pretty printing",
-					ignoreFailures = false,
-				},
-			},
+			stopAtBeginningOfMainSubprogram = false,
 		},
 	}
+	dap.configurations.c = dap.configurations.cpp
 
+	-- Python DAP
 	require("dap-python").setup("python")
-
+	
+	-- Ruby DAP
 	dap.adapters.ruby = function(callback, config)
 		callback({
 			type = "server",
@@ -79,7 +80,7 @@ function M.setup()
 	dap.configurations.ruby = {
 		{
 			type = "ruby",
-			name = "debug current file",
+			name = "Ruby debug current file",
 			request = "attach",
 			localfs = true,
 			command = "ruby",
@@ -88,8 +89,10 @@ function M.setup()
 		},
 	}
 
-	vim.api.nvim_set_keymap("n", "<leader>b", ":w<CR> :!g++ -g -o %:r.exe %<CR>", { noremap = true, silent = true })
-	vim.api.nvim_set_keymap("n", "<F2>", ':lua require("dapui").toggle()<CR>', { noremap = true, silent = true })
+	-- Keymaps
+	vim.api.nvim_create_user_command("DapToggle", function()
+		require("dapui").toggle()
+	end, {}) -- Toggle DAP UI manually with :DapToggle
 	vim.api.nvim_set_keymap("n", "<F5>", ':lua require("dap").continue()<CR>', { noremap = true, silent = true })
 	vim.api.nvim_set_keymap("n", "<F10>", ':lua require("dap").step_over()<CR>', { noremap = true, silent = true })
 	vim.api.nvim_set_keymap("n", "<F11>", ':lua require("dap").step_into()<CR>', { noremap = true, silent = true })
@@ -106,6 +109,27 @@ function M.setup()
 		':lua require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))<CR>',
 		{ silent = true }
 	)
+
+	-- Quick compile comands for preconfigured languages
+	-- Currently supports C and C++
+	local compile_commands = function(filetype)
+		if filetype =="c" then
+			return "gcc -g -o %:r %"
+		elseif filetype == "cpp" then
+			return "g++ -g -o %:r %"
+		end
+		return "echo 'No compile command for " .. filetype .. "'"
+	end
+	vim.api.nvim_create_user_command("Compile", function()
+		vim.cmd("w")
+		vim.cmd("!" .. compile_commands(vim.bo.filetype))
+		-- Notiufy when compilation succeeds
+		if vim.v.shell_error == 0 then
+			print("Compilation succeeded: " .. vim.fn.expand("%:r"))
+		else
+			print("Compilation failed")
+		end
+	end, {})
 end
 
 return M
