@@ -80,7 +80,8 @@ fi
 
 # Get the dotfiles repository from GitHub
 if [ -d "$SCRIPT_DIR" ]; then
-    console_output "Dotfiles directory already exists at $SCRIPT_DIR"
+    console_output "Dotfiles directory already exists at $SCRIPT_DIR, skipping clone."
+    console_output "The script may not work as intended if the repository is not up to date."
 else
     console_output "Cloning dotfiles repository..."
     sudo -u "$TARGET_USER" git clone https://github.com/seokgukim/dotfiles.git "$SCRIPT_DIR"
@@ -163,7 +164,7 @@ elif [ "$PKG_MANAGER" = "dnf" ]; then
 fi
 
 # Install language servers and formatters via npm
-console_output "Installing language servers and formatters..."
+console_output "Installing language servers and formatters... (via npm)"
 npm install -g \
     typescript-language-server \
     vscode-langservers-extracted \
@@ -248,15 +249,14 @@ if ! getent group docker > /dev/null; then
 fi
 usermod -aG docker "$TARGET_USER"
 
-# Source bashrc to apply changes for the current session
-source "$TARGET_HOME/.bashrc"
-
 # Final message
 console_output "Setup completed successfully!"
 console_output ""
 console_output "To finish setup:"
-console_output "1. You may have to log out and back in for docker group changes to take effect"
-console_output "2. Run 'nvim' as $TARGET_USER to trigger lazy.nvim plugin installation"
-console_output "3. In nvim, run ':checkhealth' to verify everything is working"
+console_output "1. Open a new terminal session or run: source $TARGET_HOME/.bashrc"
+console_output "2. Verify rbenv works: rbenv --version"
+console_output "3. Verify docker access: docker --version (may require logout/login)"
+console_output "4. Run 'nvim' as $TARGET_USER to trigger lazy.nvim plugin installation"
+console_output "5. In nvim, run ':checkhealth' to verify everything is working"
 console_output ""
 console_output "Note: Some plugins may require additional setup or dependencies."
