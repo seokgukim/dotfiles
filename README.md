@@ -40,12 +40,17 @@ sudo bash setup.sh
 ```
 
 The script will:
-- Install vim-gtk and required dependencies
+- Leave a directory at `~/dotfiles` with the cloned repository
+- Install required packages based on your package manager (apt, pacman, dnf)
 - Install Node.js (latest LTS) for language servers
-- Install Neovim (latest stable) from GitHub releases
-- Set up symbolic links for configurations
+- Install Neovim (latest stable) from GitHub releases, using `lazy.nvim` to manage plugins
+- Install ripgrep, fd, and other CLI tools
+- Install Python packages via system `pip`
+- Install `rbenv` and Ruby for Ruby LSP
 - Install language servers and formatters
+- Set up symbolic links for configurations
 - Configure Docker access
+- Run `~/.bashrc` to apply changes
 
 ## :gear: What's Included
 
