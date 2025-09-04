@@ -34,7 +34,7 @@ function M.setup()
 	dap.adapters.cppdbg = {
 		id = "cppdbg",
 		type = "executable",
-		command = os.getenv("HOME") .. "/cpptools/debugAdapters/bin/OpenDebugAD7",
+		command = "OpenDebugAD7", -- Adjust as needed, must be in PATH
 		options = {
 			detached = false,
 		},
