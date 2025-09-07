@@ -143,6 +143,7 @@ console_output "Installing additional tools for Neovim..."
 if [ "$PKG_MANAGER" = "apt" ]; then
     apt install -y \
         ripgrep fd-find \
+        libyaml-dev \
         python3 python3-pip python3-venv \
         ruby ruby-dev \
         clangd build-essential \
@@ -150,6 +151,7 @@ if [ "$PKG_MANAGER" = "apt" ]; then
 elif [ "$PKG_MANAGER" = "pacman" ]; then
     pacman -S --noconfirm \
         ripgrep fd \
+        libyaml \
         python python-pip python-virtualenv \
         ruby \
         clang base-devel \
@@ -157,6 +159,7 @@ elif [ "$PKG_MANAGER" = "pacman" ]; then
 elif [ "$PKG_MANAGER" = "dnf" ]; then
     dnf install -y \
         ripgrep fd-find \
+        libyaml-devel \
         python3 python3-pip python3-virtualenv \
         ruby ruby-devel \
         clang-tools-extra gcc-c++ make \
@@ -222,13 +225,14 @@ if ! grep -q 'rbenv' "$TARGET_HOME/.bashrc"; then
     echo 'eval "$(rbenv init -)"' >> "$TARGET_HOME/.bashrc"
 fi
 
+RUBY_TARGET_VERSION="3.4.5"
 # Install Ruby with proper environment setup
-console_output "Installing Ruby 3.1.2..."
-if ! sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv versions | grep -q "3.1.2"'; then
-    sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv install 3.1.2'
+console_output "Installing Ruby $RUBY_TARGET_VERSION..."
+if ! sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv versions | grep -q "$RUBY_TARGET_VERSION"'; then
+    sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv install $RUBY_TARGET_VERSION'
 fi
 
-sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv global 3.1.2'
+sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv global $RUBY_TARGET_VERSION'
 sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv rehash'
 
 # Verify Ruby installation
@@ -237,7 +241,7 @@ console_output "Ruby installed: $RUBY_VERSION"
 
 # Install Ruby gems for formatters and language servers
 console_output "Installing Ruby LSP..."
-if echo "$RUBY_VERSION" | grep -q "ruby 3.1.2"; then
+if echo "$RUBY_VERSION" | grep -q "ruby $RUBY_TARGET_VERSION"; then
     sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && gem install ruby-lsp' || console_output "Failed to install ruby-lsp"
 else
     console_output "Ruby not properly installed. Skipping ruby-lsp installation."
@@ -248,6 +252,36 @@ if ! getent group docker > /dev/null; then
     groupadd docker
 fi
 usermod -aG docker "$TARGET_USER"
+
+# SSH configuration
+console_output "Setting up SSH configuration..."
+SSH_DIR="$TARGET_HOME/.ssh"
+if [ ! -d "$SSH_DIR" ]; then
+    sudo -u "$TARGET_USER" mkdir -p "$SSH_DIR"
+    chmod 700 "$SSH_DIR"
+    console_output "Created $SSH_DIR"
+else
+    console_output "$SSH_DIR already exists, skipping creation."
+fi
+
+# Basic GitHub SSH config
+GITHUB_SSH_CONFIG="$SSH_DIR/config"
+if [ ! -f "$GITHUB_SSH_CONFIG" ]; then
+    {
+        echo "Host github.com"
+        echo "  HostName github.com"
+        echo "  User git"
+        echo "  AddKeysToAgent yes"
+        echo "  IdentityFile $SSH_DIR/seokgukim.pem"
+        echo "  IdentitiesOnly yes"
+    } >> "$GITHUB_SSH_CONFIG"
+    chmod 600 "$GITHUB_SSH_CONFIG"
+    chown "$TARGET_USER:$TARGET_USER" "$GITHUB_SSH_CONFIG"
+    console_output "Created basic GitHub SSH config at $GITHUB_SSH_CONFIG"
+else
+    console_output "SSH config already exists at $GITHUB_SSH_CONFIG, skipping."
+fi
+
 
 # Final message
 console_output "Setup completed successfully!"
