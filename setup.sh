@@ -142,7 +142,7 @@ console_output "Installing additional tools for Neovim..."
 # Install tools like ripgrep and python, ruby, clangd, build-essential, docker and etc.
 if [ "$PKG_MANAGER" = "apt" ]; then
     apt install -y \
-        ripgrep fd-find \
+        ripgrep fd-find xclip\
         libyaml-dev \
         python3 python3-pip python3-venv \
         ruby ruby-dev \
@@ -150,7 +150,7 @@ if [ "$PKG_MANAGER" = "apt" ]; then
         docker.io
 elif [ "$PKG_MANAGER" = "pacman" ]; then
     pacman -S --noconfirm \
-        ripgrep fd \
+        ripgrep fd xclip \
         libyaml \
         python python-pip python-virtualenv \
         ruby \
@@ -158,7 +158,7 @@ elif [ "$PKG_MANAGER" = "pacman" ]; then
         docker
 elif [ "$PKG_MANAGER" = "dnf" ]; then
     dnf install -y \
-        ripgrep fd-find \
+        ripgrep fd-find xclip \
         libyaml-devel \
         python3 python3-pip python3-virtualenv \
         ruby ruby-devel \
