@@ -97,14 +97,21 @@ console_output "Installing Node.js..."
 NODEJS_VERSION="v22.19.0"  # Current LTS as of Sept 2025
 NODEJS_TARGET="node-${NODEJS_VERSION}-linux-${ARCH}.tar.xz"
 NODEJS_URL="https://nodejs.org/dist/${NODEJS_VERSION}/$NODEJS_TARGET"
+NODEJS_DIR="/opt/nodejs"
 
 cd /tmp
 wget "$NODEJS_URL" -O nodejs.tar.xz
 tar -xf nodejs.tar.xz
-mv "node-${NODEJS_VERSION}-linux-${ARCH}" /opt/nodejs
-ln -sf /opt/nodejs/bin/node /usr/bin/node
-ln -sf /opt/nodejs/bin/npm /usr/bin/npm
-ln -sf /opt/nodejs/bin/npx /usr/bin/npx
+mv "node-${NODEJS_VERSION}-linux-${ARCH}" "$NODEJS_DIR"
+ln -sf "$NODEJS_DIR/bin/node" /usr/bin/node
+ln -sf "$NODEJS_DIR/bin/npm" /usr/bin/npm
+ln -sf "$NODEJS_DIR/bin/npx" /usr/bin/npx
+
+# Add Node.js to PATH for current session and .bashrc
+export PATH="$NODEJS_DIR/bin:$PATH"
+if ! grep -q 'nodejs' "$TARGET_HOME/.bashrc"; then
+    echo "export PATH=\"$NODEJS_DIR/bin:\$PATH\"" >> "$TARGET_HOME/.bashrc"
+fi
 
 console_output "Node.js installed: $(node --version)"
 
@@ -116,12 +123,13 @@ if [ "$ARCH" = "arm64" ]; then
     NVIM_TARGET="nvim-linux-arm64.tar.gz"
 fi
 NVIM_URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/$NVIM_TARGET"
+NVIM_DIR="/opt/nvim"
 
 cd /tmp
 wget "$NVIM_URL" -O nvim.tar.gz
 tar -xf nvim.tar.gz
-mv nvim-linux-* /opt/nvim
-ln -sf /opt/nvim/bin/nvim /usr/bin/nvim
+mv nvim-linux-* "$NVIM_DIR"
+ln -sf "$NVIM_DIR/bin/nvim" /usr/bin/nvim
 
 console_output "Neovim installed: $(nvim --version | head -1)"
 
