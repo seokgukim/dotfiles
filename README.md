@@ -8,7 +8,7 @@ Here are my dotfiles, mostly for `Neovim` and `Vim`.
 dotfiles/
 ├── README.md                    # This file
 ├── setup.sh                     # Automated installation script
-├── versions.txt                  # Version information
+├── versions.txt                 # Version information
 ├── .bashrc                      # Bash configuration
 ├── .gitignore                   # Git ignore patterns
 ├── nvim/                        # Neovim configuration
