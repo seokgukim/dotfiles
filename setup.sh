@@ -87,6 +87,24 @@ else
     sudo -u "$TARGET_USER" git clone https://github.com/seokgukim/dotfiles.git "$SCRIPT_DIR"
 fi
 
+# Get specific versions information from the repository
+if [ -f "$SCRIPT_DIR/versions.txt" ]; then
+    source "$SCRIPT_DIR/versions.txt" # Load variables
+    console_output "Loaded versions from versions.txt"
+else
+    console_output "versions.txt not found in $SCRIPT_DIR, proceeding without it."
+fi
+
+# Copy .bashrc if exists
+if [ -f "$SCRIPT_DIR/bash/.bashrc" ]; then
+    console_output "Setting up bash configuration..."
+    cp "$SCRIPT_DIR/bash/.bashrc" "$TARGET_HOME/.bashrc"
+    chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.bashrc"
+    console_output "Copied .bashrc to $TARGET_HOME/.bashrc"
+else
+    console_output ".bashrc not found in $SCRIPT_DIR/bash/, skipping."
+fi
+
 # Symbolic link .vimrc to /root/.vimrc
 console_output "Setting up vim configuration..."
 ln -sf "$SCRIPT_DIR/vim/.vimrc" /root/.vimrc
@@ -94,15 +112,18 @@ console_output "Linked .vimrc to /root/.vimrc"
 
 # Install Node.js (latest LTS)
 console_output "Installing Node.js..."
-NODEJS_VERSION="v22.19.0"  # Current LTS as of Sept 2025
-NODEJS_TARGET="node-${NODEJS_VERSION}-linux-${ARCH}.tar.xz"
-NODEJS_URL="https://nodejs.org/dist/${NODEJS_VERSION}/$NODEJS_TARGET"
+if [ -z "$NODEJS_TARGET_VERSION" ]; then
+    NODEJS_TARGET_VERSION="v22.19.0"  # Default to Current LTS as of Sept 2025
+    console_output "NODEJS_TARGET_VERSION not set, defaulting to $NODEJS_TARGET_VERSION"
+fi
+NODEJS_TARGET="node-${NODEJS_TARGET_VERSION}-linux-${ARCH}.tar.xz"
+NODEJS_URL="https://nodejs.org/dist/${NODEJS_TARGET_VERSION}/$NODEJS_TARGET"
 NODEJS_DIR="/opt/nodejs"
 
 cd /tmp
 wget "$NODEJS_URL" -O nodejs.tar.xz
 tar -xf nodejs.tar.xz
-mv "node-${NODEJS_VERSION}-linux-${ARCH}" "$NODEJS_DIR"
+mv "node-${NODEJS_TARGET_VERSION}-linux-${ARCH}" "$NODEJS_DIR"
 ln -sf "$NODEJS_DIR/bin/node" /usr/bin/node
 ln -sf "$NODEJS_DIR/bin/npm" /usr/bin/npm
 ln -sf "$NODEJS_DIR/bin/npx" /usr/bin/npx
@@ -117,12 +138,15 @@ console_output "Node.js installed: $(node --version)"
 
 # Install Neovim
 console_output "Installing Neovim..."
-NVIM_VERSION="v0.11.4"  # Latest stable release
+if [ -z "$NVIM_TARGET_VERSION" ]; then
+    NVIM_TARGET_VERSION="v0.11.4"  # Default to latest stable as of Sept 2025
+    console_output "NVIM_TARGET_VERSION not set, defaulting to $NVIM_TARGET_VERSION"
+fi
 NVIM_TARGET="nvim-linux-x86_64.tar.gz"
 if [ "$ARCH" = "arm64" ]; then
     NVIM_TARGET="nvim-linux-arm64.tar.gz"
 fi
-NVIM_URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/$NVIM_TARGET"
+NVIM_URL="https://github.com/neovim/neovim/releases/download/${NVIM_TARGET_VERSION}/$NVIM_TARGET"
 NVIM_DIR="/opt/nvim"
 
 cd /tmp
@@ -130,6 +154,12 @@ wget "$NVIM_URL" -O nvim.tar.gz
 tar -xf nvim.tar.gz
 mv nvim-linux-* "$NVIM_DIR"
 ln -sf "$NVIM_DIR/bin/nvim" /usr/bin/nvim
+
+# Add Neovim to .bashrc as EDITOR and VISUAL
+if ! grep -q 'nvim' "$TARGET_HOME/.bashrc"; then
+    echo 'export EDITOR="nvim"' >> "$TARGET_HOME/.bashrc"
+    echo 'export VISUAL="nvim"' >> "$TARGET_HOME/.bashrc"
+fi
 
 console_output "Neovim installed: $(nvim --version | head -1)"
 
@@ -233,8 +263,11 @@ if ! grep -q 'rbenv' "$TARGET_HOME/.bashrc"; then
     echo 'eval "$(rbenv init -)"' >> "$TARGET_HOME/.bashrc"
 fi
 
-RUBY_TARGET_VERSION="3.4.5"
 # Install Ruby with proper environment setup
+if [ -z "$RUBY_TARGET_VERSION" ]; then
+    RUBY_TARGET_VERSION="3.4.5"  # Default to latest stable as of Sept 2025
+    console_output "RUBY_TARGET_VERSION not set, defaulting to $RUBY_TARGET_VERSION"
+fi
 console_output "Installing Ruby $RUBY_TARGET_VERSION..."
 if ! sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv versions | grep -q "$RUBY_TARGET_VERSION"'; then
     sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv install $RUBY_TARGET_VERSION'
