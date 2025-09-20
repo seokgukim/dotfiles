@@ -281,9 +281,10 @@ RUBY_VERSION=$(sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:
 console_output "Ruby installed: $RUBY_VERSION"
 
 # Install Ruby gems for formatters and language servers
-console_output "Installing Ruby LSP..."
+console_output "Installing Ruby LSP and RuboCop..."
 if echo "$RUBY_VERSION" | grep -q "ruby $RUBY_TARGET_VERSION"; then
     sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && gem install ruby-lsp' || console_output "Failed to install ruby-lsp"
+    sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && gem install rubocop' || console_output "Failed to install rubocop"
 else
     console_output "Ruby not properly installed. Skipping ruby-lsp installation."
 fi
