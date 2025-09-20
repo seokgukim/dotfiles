@@ -14,6 +14,7 @@ function M.setup()
 			yaml = { "prettier" },
 			cpp = { "clang_format" },
 			c = { "clang_format" },
+            ruby = { "rubocop" },
 		},
 
 		format_on_save = {
