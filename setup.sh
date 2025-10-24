@@ -24,7 +24,7 @@ elif [ -z "$USER" ]; then
     exit 1
 elif [ "$USER" = "root" ]; then
     TARGET_USER="root"
-    TARGET_HOME="/root"
+    TARGET_HOME="/home/root"
     # For root, show a confirmation message to ask if they want to proceed
     console_output "Warning: You are running this script as root. Proceeding may affect the root user's environment."
     read -r -p "Do you want to continue? (y/n): " response < /dev/tty
@@ -263,8 +263,6 @@ if ! grep -q 'rbenv' "$TARGET_HOME/.bashrc"; then
     echo 'eval "$(rbenv init -)"' >> "$TARGET_HOME/.bashrc"
 fi
 
-# Export rbenv path for current session
-export PATH="$TARGET_HOME/.rbenv/bin:$PATH"
 
 # Install Ruby with proper environment setup
 if [ -z "$RUBY_TARGET_VERSION" ]; then
