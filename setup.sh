@@ -185,7 +185,8 @@ if [ "$PKG_MANAGER" = "apt" ]; then
         python3 python3-pip python3-venv \
         ruby ruby-dev \
         clangd build-essential \
-        docker.io
+        docker.io \
+        libssl-dev libreadline-dev zlib1g-dev autoconf bison libyaml-dev libreadline-dev libncurses5-dev libffi-dev libgdbm-dev
 elif [ "$PKG_MANAGER" = "pacman" ]; then
     pacman -S --noconfirm \
         ripgrep fd xclip \
@@ -193,7 +194,8 @@ elif [ "$PKG_MANAGER" = "pacman" ]; then
         python python-pip python-virtualenv \
         ruby \
         clang base-devel \
-        docker
+        docker \
+        openssl readline zlib autoconf bison libyaml ncurses libffi gdbm
 elif [ "$PKG_MANAGER" = "dnf" ]; then
     dnf install -y \
         ripgrep fd-find xclip \
@@ -201,7 +203,8 @@ elif [ "$PKG_MANAGER" = "dnf" ]; then
         python3 python3-pip python3-virtualenv \
         ruby ruby-devel \
         clang-tools-extra gcc-c++ make \
-        docker
+        docker \
+        openssl-devel readline-devel zlib-devel autoconf bison libyaml-devel ncurses-devel libffi-devel gdbm-devel
 fi
 
 # Install language servers and formatters via npm
@@ -250,6 +253,7 @@ console_output "Setting up rbenv for Ruby version management..."
 # Check if rbenv already exists
 if [ ! -d "$TARGET_HOME/.rbenv" ]; then
     sudo -u "$TARGET_USER" git clone https://github.com/rbenv/rbenv.git "$TARGET_HOME/.rbenv"
+    cd "$TARGET_HOME/.rbenv" && sudo -u "$TARGET_USER" src/configure && sudo -u "$TARGET_USER" make -C src || console_output "Warning: rbenv dynamic bash extension compilation failed (optional)"
 fi
 
 if [ ! -d "$TARGET_HOME/.rbenv/plugins/ruby-build" ]; then
@@ -258,11 +262,9 @@ fi
 
 # Add rbenv to bashrc if not already present
 if ! grep -q 'rbenv' "$TARGET_HOME/.bashrc"; then
-    TEMPORARY_PATH="$TARGET_HOME/.rbenv/bin"
-    echo "export PATH=\"$TEMPORARY_PATH:\$PATH\"" >> "$TARGET_HOME/.bashrc"
-    echo 'eval "$(rbenv init -)"' >> "$TARGET_HOME/.bashrc"
+    echo "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\"" >> "$TARGET_HOME/.bashrc"
+    echo 'eval "$(rbenv init - bash)"' >> "$TARGET_HOME/.bashrc"
 fi
-
 
 # Install Ruby with proper environment setup
 if [ -z "$RUBY_TARGET_VERSION" ]; then
@@ -270,22 +272,28 @@ if [ -z "$RUBY_TARGET_VERSION" ]; then
     console_output "RUBY_TARGET_VERSION not set, defaulting to $RUBY_TARGET_VERSION"
 fi
 console_output "Installing Ruby $RUBY_TARGET_VERSION..."
-if ! sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && rbenv versions | grep -q \"$RUBY_TARGET_VERSION\""; then
-    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && rbenv install $RUBY_TARGET_VERSION"
+
+# Check if Ruby version is already installed
+if ! sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init - bash)\" && rbenv versions 2>/dev/null | grep -q \"$RUBY_TARGET_VERSION\""; then
+    console_output "Installing Ruby $RUBY_TARGET_VERSION (this may take several minutes)..."
+    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init - bash)\" && rbenv install $RUBY_TARGET_VERSION"
+else
+    console_output "Ruby $RUBY_TARGET_VERSION already installed"
 fi
 
-sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && rbenv global $RUBY_TARGET_VERSION"
-sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && rbenv rehash"
+# Set global Ruby version
+sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init - bash)\" && rbenv global $RUBY_TARGET_VERSION"
+sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init - bash)\" && rbenv rehash"
 
 # Verify Ruby installation
-RUBY_VERSION=$(sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && ruby -v" 2>/dev/null || echo "Ruby installation failed")
+RUBY_VERSION=$(sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init - bash)\" && ruby -v" 2>/dev/null || echo "Ruby installation failed")
 console_output "Ruby installed: $RUBY_VERSION"
 
 # Install Ruby gems for formatters and language servers
 console_output "Installing Ruby LSP and RuboCop..."
 if echo "$RUBY_VERSION" | grep -q "ruby $RUBY_TARGET_VERSION"; then
-    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && gem install ruby-lsp" || console_output "Failed to install ruby-lsp"
-    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && gem install rubocop" || console_output "Failed to install rubocop"
+    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init - bash)\" && gem install ruby-lsp" || console_output "Failed to install ruby-lsp"
+    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init - bash)\" && gem install rubocop" || console_output "Failed to install rubocop"
 else
     console_output "Ruby not properly installed. Skipping ruby-lsp installation."
 fi
