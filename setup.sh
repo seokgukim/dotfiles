@@ -96,7 +96,7 @@ else
 fi
 
 # Copy .bashrc if exists
-if [ -f "$SCRIPT_DIR/.bashrc" ]; then
+if [ -f "$SCRIPT_DIR/bash/.bashrc" ]; then
     console_output "Setting up bash configuration..."
     cp "$SCRIPT_DIR/bash/.bashrc" "$TARGET_HOME/.bashrc"
     chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.bashrc"
