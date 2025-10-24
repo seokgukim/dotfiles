@@ -64,21 +64,9 @@ function M.setup()
 		}),
 	})
 
-	local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
-	local lsp = require("lspconfig")
-	lsp.clangd.setup({
-		capabilities = capabilities,
-	})
-	lsp.pyright.setup({
-		capabilities = capabilities,
-	})
-	lsp.ruby_lsp.setup({
-		capabilities = capabilities,
-	})
-	--lsp.harper_ls.setup{
-	--    capabilities = capabilities,
-	--}
+    vim.lsp.enable("clangd")
+    vim.lsp.enable("pyright")
+    vim.lsp.enable("ruby_lsp")
 end
 
 return M

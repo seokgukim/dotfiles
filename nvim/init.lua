@@ -23,14 +23,14 @@ require("lazy").setup({
 	"tpope/vim-fugitive",
 	"airblade/vim-gitgutter",
 	--DAP
-	-- "mfussenegger/nvim-dap",
-	-- "mfussenegger/nvim-dap-python",
-	-- "suketa/nvim-dap-ruby",
-	-- {
-	-- 	"rcarriga/nvim-dap-ui",
-	-- 	dependencies = { "nvim-neotest/nvim-nio" },
-	-- },
-	-- "theHamsta/nvim-dap-virtual-text",
+	"mfussenegger/nvim-dap",
+	"mfussenegger/nvim-dap-python",
+	"suketa/nvim-dap-ruby",
+	{
+		"rcarriga/nvim-dap-ui",
+		dependencies = { "nvim-neotest/nvim-nio" },
+	},
+	"theHamsta/nvim-dap-virtual-text",
 	--TreeSitter
 	"nvim-treesitter/nvim-treesitter",
 	--Telescope
@@ -90,7 +90,7 @@ require("config.formatter").setup()
 require("config.appearance").setup()
 
 --DAP
--- require("config.dap").setup()
+require("config.dap").setup()
 
 --Copilot
 require("config.copilot").setup()
