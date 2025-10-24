@@ -7,10 +7,12 @@ Here are my dotfiles, mostly for `Neovim` and `Vim`.
 ```
 dotfiles/
 ├── README.md                    # This file
+├── LICENSE                      # License file
 ├── setup.sh                     # Automated installation script
 ├── versions.txt                 # Version information
-├── .bashrc                      # Bash configuration
 ├── .gitignore                   # Git ignore patterns
+├── bash/
+│   └── .bashrc                  # Bash configuration
 ├── nvim/                        # Neovim configuration
 │   ├── init.lua                 # Main Neovim config entry point
 │   ├── lazy-lock.json           # Plugin version lock file
