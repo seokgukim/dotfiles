@@ -24,7 +24,7 @@ elif [ -z "$USER" ]; then
     exit 1
 elif [ "$USER" = "root" ]; then
     TARGET_USER="root"
-    TARGET_HOME="/home/root"
+    TARGET_HOME="/root"
     # For root, show a confirmation message to ask if they want to proceed
     console_output "Warning: You are running this script as root. Proceeding may affect the root user's environment."
     read -r -p "Do you want to continue? (y/n): " response < /dev/tty
