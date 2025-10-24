@@ -24,7 +24,7 @@ elif [ -z "$USER" ]; then
     exit 1
 elif [ "$USER" = "root" ]; then
     TARGET_USER="root"
-    TARGET_HOME="/home/root"
+    TARGET_HOME="/root"
     # For root, show a confirmation message to ask if they want to proceed
     console_output "Warning: You are running this script as root. Proceeding may affect the root user's environment."
     read -r -p "Do you want to continue? (y/n): " response < /dev/tty
@@ -270,22 +270,22 @@ if [ -z "$RUBY_TARGET_VERSION" ]; then
     console_output "RUBY_TARGET_VERSION not set, defaulting to $RUBY_TARGET_VERSION"
 fi
 console_output "Installing Ruby $RUBY_TARGET_VERSION..."
-if ! sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv versions | grep -q "$RUBY_TARGET_VERSION"'; then
-    sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv install $RUBY_TARGET_VERSION'
+if ! sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && rbenv versions | grep -q \"$RUBY_TARGET_VERSION\""; then
+    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && rbenv install $RUBY_TARGET_VERSION"
 fi
 
-sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv global $RUBY_TARGET_VERSION'
-sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && rbenv rehash'
+sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && rbenv global $RUBY_TARGET_VERSION"
+sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && rbenv rehash"
 
 # Verify Ruby installation
-RUBY_VERSION=$(sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && ruby -v' 2>/dev/null || echo "Ruby installation failed")
+RUBY_VERSION=$(sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && ruby -v" 2>/dev/null || echo "Ruby installation failed")
 console_output "Ruby installed: $RUBY_VERSION"
 
 # Install Ruby gems for formatters and language servers
 console_output "Installing Ruby LSP and RuboCop..."
 if echo "$RUBY_VERSION" | grep -q "ruby $RUBY_TARGET_VERSION"; then
-    sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && gem install ruby-lsp' || console_output "Failed to install ruby-lsp"
-    sudo -H -u "$TARGET_USER" bash -c 'export PATH="$HOME/.rbenv/bin:$PATH" && eval "$(rbenv init -)" && gem install rubocop' || console_output "Failed to install rubocop"
+    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && gem install ruby-lsp" || console_output "Failed to install ruby-lsp"
+    sudo -H -u "$TARGET_USER" bash -c "export PATH=\"$TARGET_HOME/.rbenv/bin:\$PATH\" && eval \"\$(rbenv init -)\" && gem install rubocop" || console_output "Failed to install rubocop"
 else
     console_output "Ruby not properly installed. Skipping ruby-lsp installation."
 fi
