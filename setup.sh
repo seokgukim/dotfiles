@@ -96,7 +96,7 @@ else
 fi
 
 # Copy .bashrc if exists
-if [ -f "$SCRIPT_DIR/bash/.bashrc" ]; then
+if [ -f "$SCRIPT_DIR/.bashrc" ]; then
     console_output "Setting up bash configuration..."
     cp "$SCRIPT_DIR/bash/.bashrc" "$TARGET_HOME/.bashrc"
     chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.bashrc"
@@ -262,6 +262,9 @@ if ! grep -q 'rbenv' "$TARGET_HOME/.bashrc"; then
     echo "export PATH=\"$TEMPORARY_PATH:\$PATH\"" >> "$TARGET_HOME/.bashrc"
     echo 'eval "$(rbenv init -)"' >> "$TARGET_HOME/.bashrc"
 fi
+
+# Export rbenv path for current session
+export PATH="$TARGET_HOME/.rbenv/bin:$PATH"
 
 # Install Ruby with proper environment setup
 if [ -z "$RUBY_TARGET_VERSION" ]; then
