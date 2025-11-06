@@ -2,6 +2,32 @@ local M = {}
 
 function M.setup()
 	local cmp = require("cmp")
+	local cmp_nvim_lsp = require("cmp_nvim_lsp")
+
+	-- Get default capabilities and enhance them
+	local capabilities = cmp_nvim_lsp.default_capabilities()
+	
+	-- Enable semantic tokens
+	capabilities.textDocument.semanticTokens = {
+		dynamicRegistration = false,
+		requests = {
+			range = true,
+			full = {
+				delta = true
+			}
+		},
+		tokenTypes = {
+			"namespace", "type", "class", "enum", "interface", "struct",
+			"typeParameter", "parameter", "variable", "property", "enumMember",
+			"event", "function", "method", "macro", "keyword", "modifier",
+			"comment", "string", "number", "regexp", "operator"
+		},
+		tokenModifiers = {
+			"declaration", "definition", "readonly", "static", "deprecated",
+			"abstract", "async", "modification", "documentation", "defaultLibrary"
+		},
+		formats = { "relative" }
+	}
 
 	cmp.setup({
 		snippet = {
@@ -30,11 +56,21 @@ function M.setup()
 	})
 
 	vim.diagnostic.config({
-		virtual_text = true,
+		virtual_text = {
+			spacing = 4,
+			source = "if_many",
+			prefix = "●",
+		},
 		signs = true,
 		update_in_insert = false,
 		underline = true,
 		severity_sort = true,
+		float = {
+			border = "rounded",
+			source = "always",
+			header = "",
+			prefix = "",
+		},
 	})
 
 	-- Set configuration for specific filetype.
@@ -67,6 +103,7 @@ function M.setup()
     vim.lsp.enable("clangd")
     vim.lsp.enable("pyright")
     vim.lsp.enable("ruby_lsp")
+    vim.lsp.enable("lua_ls")
 end
 
 return M

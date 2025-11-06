@@ -82,6 +82,7 @@ require("config.utils").setup()
 
 --LSP
 require("config.lsp").setup()
+require("mlua").setup()
 
 --Formatter
 require("config.formatter").setup()
