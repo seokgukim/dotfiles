@@ -75,6 +75,9 @@ require("lazy").setup({
 		"stevearc/conform.nvim",
 		opts = {},
 	},
+	-- "ggml-org/llama.vim",
+	-- mlua
+	"seokgukim/mlua.nvim",
 })
 
 --Utils
@@ -82,7 +85,6 @@ require("config.utils").setup()
 
 --LSP
 require("config.lsp").setup()
-require("mlua").setup()
 
 --Formatter
 require("config.formatter").setup()
@@ -98,3 +100,6 @@ require("config.copilot").setup()
 
 --Keymaps
 require("config.keymaps").setup()
+
+---mLua
+require("mlua").setup()
