@@ -77,7 +77,7 @@ require("lazy").setup({
 	},
 	-- "ggml-org/llama.vim",
 	-- mlua
-	"seokgukim/mlua.nvim",
+	-- "seokgukim/mlua.nvim",
 })
 
 --Utils
@@ -102,4 +102,4 @@ require("config.copilot").setup()
 require("config.keymaps").setup()
 
 ---mLua
-require("mlua").setup()
+-- require("mlua").setup()
