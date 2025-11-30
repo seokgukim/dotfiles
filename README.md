@@ -74,7 +74,7 @@ The script will:
 - **TypeScript/JavaScript**: typescript-language-server, prettier, eslint
 - **HTML/CSS/JSON**: vscode-langservers-extracted
 - **Python**: pyright, black, isort, flake8
-- **Ruby**: ruby-lsp
+- **Ruby**: Installed via Nix (ruby, ruby-lsp)
 - **Bash**: bash-language-server
 - **C/C++**: clangd
 
