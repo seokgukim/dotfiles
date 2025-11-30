@@ -174,14 +174,17 @@ fi
 console_output "Setting up shell startup for user: $TARGET_USER"
 
 # Add Neovim to .bashrc as EDITOR and VISUAL
-su -l "$TARGET_USER" -c 'echo export EDITOR="nvim" >> $HOME/.bashrc'
-su -l "$TARGET_USER" -c 'echo export VISUAL="nvim" >> $HOME/.bashrc'
-su -l "$TARGET_USER" -c 'echo ". $HOME/.nix-profile/etc/profile.d/nix.sh" >> $HOME/.bashrc'
+su -l "$TARGET_USER" -c "cat >> \$HOME/.bashrc <<'BASHRC'
+export EDITOR=\"nvim\"
+export VISUAL=\"nvim\"
+. \$HOME/.nix-profile/etc/profile.d/nix.sh
+BASHRC"
 
-su -l "$TARGET_USER" -c 'mkdir -p $HOME/.config/nushell'
-su -l "$TARGET_USER" -c 'echo "let-env EDITOR = \"nvim\"" >> $HOME/.config/nushell/config.nu'
-su -l "$TARGET_USER" -c 'echo "let-env VISUAL = \"nvim\"" >> $HOME/.config/nushell/config.nu'
-su -l "$TARGET_USER" -c 'echo "source ~/.nix-profile/etc/profile.d/nix.sh" >> $HOME/.config/nushell/config.nu'
+su -l "$TARGET_USER" -c "mkdir -p \$HOME/.config/nushell && cat >> \$HOME/.config/nushell/config.nu <<'NUSHELLCFG'
+\$env.EDITOR = \"nvim\"
+\$env.VISUAL = \"nvim\"
+source ~/.nix-profile/etc/profile.d/nix.sh
+NUSHELLCFG"
 
 
 # Final message
