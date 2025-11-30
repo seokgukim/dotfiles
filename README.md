@@ -1,9 +1,11 @@
 # :diamond_shape_with_a_dot_inside: SeokguKim's dotfiles
+
 Here are my dotfiles, mostly for `Neovim` and `Vim`.
 
 ![Symbol_SeokguKim](https://github.com/SeokguKim/dotfiles/assets/43718966/0181c5a0-2258-4166-aea7-de9b61c296de)
 
 ## :file_folder: Structure
+
 ```
 dotfiles/
 ├── README.md                    # This file
@@ -11,8 +13,6 @@ dotfiles/
 ├── setup.sh                     # Automated installation script
 ├── versions.txt                 # Version information
 ├── .gitignore                   # Git ignore patterns
-├── bash/
-│   └── .bashrc                  # Bash configuration
 ├── nvim/                        # Neovim configuration
 │   ├── init.lua                 # Main Neovim config entry point
 │   ├── lazy-lock.json           # Plugin version lock file
@@ -30,8 +30,9 @@ dotfiles/
 ```
 
 ## :rocket: Installation
+
 Run the following command to download and execute the setup script.  
-This will run `setup.sh` in this repo with root privileges to ensure all dependencies are installed correctly.
+This will run `setup.sh` with root privileges; the script installs Nix if missing, installs packages via nix-env, sets Nushell as the default shell, and configures the user environment.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/seokgukim/dotfiles/main/setup.sh | sudo bash
@@ -44,21 +45,20 @@ sudo bash setup.sh
 ```
 
 The script will:
-- Leave a directory at `~/dotfiles` with the cloned repository
-- Install required packages based on your package manager (apt, pacman, dnf)
-- Install Node.js (latest LTS) for language servers
-- Install Neovim (latest stable) from GitHub releases, using `lazy.nvim` to manage plugins
-- Install ripgrep, fd, and other CLI tools
-- Install Python packages via system `pip`
-- Install `rbenv` and Ruby for Ruby LSP
-- Install language servers and formatters
-- Set up symbolic links for configurations
-- Configure Docker access
-- Run `~/.bashrc` to apply changes
+
+- Install Nix if not present and source the Nix profile
+- Install essential packages via nix-env (Neovim, Nushell, Node.js, ripgrep, fd, etc.)
+- Clone this repository into `~/dotfiles`
+- Link Neovim config to `~/.config/nvim` and link `/root/.vimrc`
+- Add the user to the docker group
+- Create a basic SSH config in `~/.ssh/config`
+- Set Nushell as the default shell when available
+- Append EDITOR/VISUAL and Nix profile sourcing to `~/.bashrc` and create `~/.config/nushell/config.nu`
 
 ## :gear: What's Included
 
 ### Neovim Features
+
 - **Plugin Manager**: [lazy.nvim](https://github.com/folke/lazy.nvim)
 - **Theme**: [nightfox.nvim](https://github.com/EdenEast/nightfox.nvim)
 - **LSP**: Full language server support with auto-completion
@@ -71,6 +71,7 @@ The script will:
 - **AI Assistance**: GitHub Copilot integration
 
 ### Language Support
+
 - **TypeScript/JavaScript**: typescript-language-server, prettier, eslint
 - **HTML/CSS/JSON**: vscode-langservers-extracted
 - **Python**: pyright, black, isort, flake8
@@ -79,6 +80,7 @@ The script will:
 - **C/C++**: clangd
 
 ### Development Tools
+
 - Docker integration
 - Git workflow enhancements
 - Advanced search with ripgrep
@@ -96,7 +98,7 @@ The script will:
 
 ## :wrench: Requirements
 
-- Linux system with apt, pacman, or dnf package manager
+- Linux system with Nix (recommended), or apt, pacman, dnf package manager
 - Root access for installation
 - Internet connection for downloading dependencies
 
@@ -105,13 +107,20 @@ The script will:
 After running the setup script, follow these steps to complete the setup:
 
 ### 1. Refresh Your Environment
+
 Open a new terminal session or run:
+
 ```bash
-source ~/.bashrc
+# Load environment changes
+source $HOME/.bashrc
+# Or start Nushell now:
+nu
 ```
 
 ### 2. Verify Tool Installation
+
 Check that the development tools are working:
+
 ```bash
 # Verify rbenv
 rbenv --version
@@ -128,33 +137,45 @@ docker --version
 ```
 
 ### 3. Initialize Neovim
+
 Run Neovim to trigger automatic plugin installation:
+
 ```bash
 nvim
 ```
+
 - Lazy.nvim will automatically install all configured plugins
 - Wait for the installation to complete
 - Exit Neovim with `:q`
 
 ### 4. Health Check
+
 Run Neovim's health check to verify everything is working:
+
 ```bash
 nvim -c ':checkhealth'
 ```
+
 This will show you:
+
 - Which language servers are available
 - If formatters are properly installed
 - Any missing dependencies
 
 ### 5. Configure GitHub Copilot (Optional)
+
 If you want to use GitHub Copilot:
+
 ```bash
 nvim -c ':Copilot setup'
 ```
+
 Follow the prompts to authenticate with your GitHub account.
 
 ### 6. Docker Group Access
+
 For Docker commands to work without sudo:
+
 - Log out and log back in, or
 - Run: `newgrp docker` in your current session
 
@@ -162,10 +183,9 @@ For Docker commands to work without sudo:
 
 If you encounter issues:
 
-1. **rbenv not found**: Restart your terminal or run `source ~/.bashrc`
-2. **Language servers not working**: Run `:checkhealth lsp` in Neovim
-3. **Docker permission denied**: Ensure you're in the docker group with `groups`
-4. **Plugins not loading**: Delete `~/.local/share/nvim` and restart Neovim
+1. **Language servers not working**: Run `:checkhealth lsp` in Neovim
+2. **Docker permission denied**: Ensure you're in the docker group with `groups`
+3. **Plugins not loading**: Delete `~/.local/share/nvim` and restart Neovim
 
 ## :memo: Notes
 
@@ -173,4 +193,3 @@ If you encounter issues:
 - DAP (Debug Adapter Protocol) is commented out by default
 - Configurations are modular and can be easily customized
 - The setup installs tools system-wide but configurations are user-specific
-
