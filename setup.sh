@@ -163,16 +163,6 @@ else
     console_output "SSH config already exists at $GITHUB_SSH_CONFIG, skipping."
 fi
 
-# Set Nushell as default shell
-if command -v nu &> /dev/null; then
-    chsh -s $(command -v nu) "$TARGET_USER"
-    console_output "Set Nushell as default shell for $TARGET_USER."
-else
-    console_output "Nushell not found, skipping shell change."
-fi
-
-console_output "Setting up shell startup for user: $TARGET_USER"
-
 # Add Neovim to .bashrc as EDITOR and VISUAL
 su -l "$TARGET_USER" -c "cat >> \$HOME/.bashrc <<'BASHRC'
 export EDITOR=\"nvim\"
