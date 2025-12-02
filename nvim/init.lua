@@ -76,8 +76,12 @@ require("lazy").setup({
 		opts = {},
 	},
 	-- "ggml-org/llama.vim",
-	-- mlua
+	
+    -- mlua
 	-- "seokgukim/mlua.nvim",
+    
+    -- im-select
+    "keaising/im-select.nvim",
 })
 
 --Utils
@@ -103,3 +107,6 @@ require("config.keymaps").setup()
 
 ---mLua
 -- require("mlua").setup()
+
+-- im_select
+require("im_select").setup({})
