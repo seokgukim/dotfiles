@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e  # Exit on any error
+set -eu  # Exit on any error and undefined variables
 
 # Function to print messages with a prefix and logging
 console_output() {
@@ -44,69 +44,39 @@ if [ -f "/home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh" ]; then
 fi
 if ! command -v nix &> /dev/null; then
     console_output "Nix not found. Installing Nix package manager for $TARGET_USER..."
-    if [ ! -d /nix ]; then
-        mkdir -m 0755 /nix
+    if [ "$(id -u)" -eq 0 ]; then
+        console_output "Running multi-user Nix daemon installer (requires root)"
+        curl -L https://nixos.org/nix/install | sh -s -- --daemon --yes
+
+        # Ensure daemon is running (for containers/non-systemd)
+        if ! pgrep -x "nix-daemon" > /dev/null; then
+             console_output "Nix daemon not running. Starting it in background..."
+             # Source the profile to get nix-daemon in path or use absolute path
+             if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+                 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+             fi
+             nix-daemon >/dev/null 2>&1 &
+             
+             # Wait for socket
+             console_output "Waiting for Nix daemon socket..."
+             for i in {1..10}; do
+                 if [ -e /nix/var/nix/daemon-socket/socket ]; then break; fi
+                 sleep 1
+             done
+        fi
+    else
+        su - "$TARGET_USER" -c 'curl -L https://nixos.org/nix/install | sh -s -- --yes'
     fi
-    chown -R "$TARGET_USER" /nix
-    if ! getent group nixbld > /dev/null; then
-        groupadd nixbld
-    fi
-    su - "$TARGET_USER" -c 'curl -L https://nixos.org/nix/install | sh'
-    su - "$TARGET_USER" -c '. $HOME/.nix-profile/etc/profile.d/nix.sh || true'
 fi
 
-if [ -f "/home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh" ]; then
-    . /home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh || true
+# Source Nix environment (Multi-user or Single-user)
+if [ -e "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]; then
+    . "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+elif [ -f "/home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh" ]; then
+    . "/home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh"
 fi
 
 console_output "Using Nix for package management."
-console_output "Installing essential packages with Nix..."
-su -l "$TARGET_USER" -c 'nix-env -iA \
-  nixpkgs.wget \
-  nixpkgs.git \
-  nixpkgs.vim \
-  nixpkgs.neovim \
-  nixpkgs.nushell \
-  nixpkgs.ripgrep \
-  nixpkgs.fd \
-  nixpkgs.xclip \
-  nixpkgs.python3 \
-  nixpkgs.ruby \
-  nixpkgs.docker \
-  nixpkgs.nodejs \
-  nixpkgs.gcc \
-  nixpkgs.gnumake \
-  nixpkgs.openssl \
-  nixpkgs.readline \
-  nixpkgs.zlib \
-  nixpkgs.autoconf \
-  nixpkgs.bison \
-  nixpkgs.ncurses \
-  nixpkgs.libffi \
-  nixpkgs.gdbm \
-  nixpkgs.zellij \
-  nixpkgs.zoxide \
-  nixpkgs.yazi \
-  nixpkgs.uutils-coreutils \
-  nixpkgs.lazygit \
-  nixpkgs.jj \
-  nixpkgs.lazydocker \
-  nixpkgs.harlequin \
-  nixpkgs.btop \
-  nixpkgs.fzf \
-  nixpkgs.typescript-language-server \
-  nixpkgs.vscode-langservers-extracted \
-  nixpkgs.bash-language-server \
-  nixpkgs.pyright \
-  nixpkgs.prettier \
-  nixpkgs.eslint \
-  nixpkgs.black \
-  nixpkgs.isort \
-  nixpkgs.ruby-lsp \
-  nixpkgs.rubocop \
-  nixpkgs.nushell \
-  --quiet'
-
 
 # Get the dotfiles repository from GitHub
 if [ -d "$SCRIPT_DIR" ]; then
@@ -114,68 +84,40 @@ if [ -d "$SCRIPT_DIR" ]; then
     console_output "The script may not work as intended if the repository is not up to date."
 else
     console_output "Cloning dotfiles repository..."
-    su -l "$TARGET_USER" -c "export SCRIPT_DIR='$SCRIPT_DIR'; git clone https://github.com/seokgukim/dotfiles.git \"\$SCRIPT_DIR\""
+    # Use ephemeral git to clone without installing it into profile
+    su -l "$TARGET_USER" -c "export SCRIPT_DIR='$SCRIPT_DIR'; nix --extra-experimental-features 'nix-command flakes' run nixpkgs#git -- clone https://github.com/seokgukim/dotfiles.git \"\$SCRIPT_DIR\""
 fi
 
-# Symbolic link .vimrc to /root/.vimrc
-console_output "Setting up vim configuration..."
-ln -sf "$SCRIPT_DIR/vim/.vimrc" /root/.vimrc
-console_output "Linked .vimrc to /root/.vimrc"
+# Configure Nix for Flakes
+mkdir -p "$TARGET_HOME/.config/nix"
+echo "experimental-features = nix-command flakes" >> "$TARGET_HOME/.config/nix/nix.conf"
+chown -R "$TARGET_USER" "$TARGET_HOME/.config"
 
-console_output "Setting up Neovim configuration for user: $TARGET_USER"
+# Update username in Nix files to match current user
+if [ "$TARGET_USER" != "seokgukim" ]; then
+    console_output "Updating configuration for user: $TARGET_USER"
+    sed -i "s/seokgukim/$TARGET_USER/g" "$SCRIPT_DIR/flake.nix"
+    sed -i "s/seokgukim/$TARGET_USER/g" "$SCRIPT_DIR/home.nix"
+fi
 
-# Create .config directory if it doesn't exist
-su -l "$TARGET_USER" -c "export TARGET_HOME='$TARGET_HOME'; mkdir -p \"\$TARGET_HOME/.config\"; ln -sf '$SCRIPT_DIR/nvim' \"\$TARGET_HOME/.config/nvim\"; chown -h $TARGET_USER:$TARGET_USER \"\$TARGET_HOME/.config/nvim\""
-console_output "Linked nvim config to $TARGET_HOME/.config/nvim"
+console_output "Applying Home Manager configuration..."
+# We use 'nix run' to execute home-manager from the flake without installing it globally first
+# Nix Flakes require files to be tracked by git. We use ephemeral git to stage them.
+su -l "$TARGET_USER" -c "cd '$SCRIPT_DIR' && nix --extra-experimental-features 'nix-command flakes' run nixpkgs#git -- add . && nix run home-manager/master -- switch --flake .#$TARGET_USER -b backup"
 
 # Add current user to docker group
 if ! getent group docker > /dev/null; then
-    groupadd docker
+    if [ "$(id -u)" -eq 0 ]; then
+        groupadd docker
+    else
+        sudo groupadd docker
+    fi
 fi
-usermod -aG docker "$TARGET_USER"
-
-# SSH configuration
-console_output "Setting up SSH configuration..."
-SSH_DIR="$TARGET_HOME/.ssh"
-if [ ! -d "$SSH_DIR" ]; then
-    su -l "$TARGET_USER" -c "export SSH_DIR='$SSH_DIR'; mkdir -p \"\$SSH_DIR\""
-    chmod 700 "$SSH_DIR"
-    console_output "Created $SSH_DIR"
+if [ "$(id -u)" -eq 0 ]; then
+    usermod -aG docker "$TARGET_USER"
 else
-    console_output "$SSH_DIR already exists, skipping creation."
+    sudo usermod -aG docker "$TARGET_USER"
 fi
-
-# Basic GitHub SSH config
-GITHUB_SSH_CONFIG="$SSH_DIR/config"
-if [ ! -f "$GITHUB_SSH_CONFIG" ]; then
-    {
-        echo "Host github.com"
-        echo "  HostName github.com"
-        echo "  User git"
-        echo "  AddKeysToAgent yes"
-        echo "  IdentityFile $SSH_DIR/seokgukim.pem"
-        echo "  IdentitiesOnly yes"
-    } >> "$GITHUB_SSH_CONFIG"
-    chmod 600 "$GITHUB_SSH_CONFIG"
-    chown "$TARGET_USER:$TARGET_USER" "$GITHUB_SSH_CONFIG"
-    console_output "Created basic GitHub SSH config at $GITHUB_SSH_CONFIG"
-else
-    console_output "SSH config already exists at $GITHUB_SSH_CONFIG, skipping."
-fi
-
-# Add Neovim to .bashrc as EDITOR and VISUAL
-su -l "$TARGET_USER" -c "cat >> \$HOME/.bashrc <<'BASHRC'
-export EDITOR=\"nvim\"
-export VISUAL=\"nvim\"
-. \$HOME/.nix-profile/etc/profile.d/nix.sh
-BASHRC"
-
-su -l "$TARGET_USER" -c "mkdir -p \$HOME/.config/nushell && cat >> \$HOME/.config/nushell/config.nu <<'NUSHELLCFG'
-\$env.EDITOR = \"nvim\"
-\$env.VISUAL = \"nvim\"
-source ~/.nix-profile/etc/profile.d/nix.sh
-NUSHELLCFG"
-
 
 # Final message
 console_output "Setup completed successfully!"
@@ -185,6 +127,5 @@ console_output "1. Open a new terminal session or run: source $TARGET_HOME/.bash
 console_output "2. Verify docker access: docker --version (may require logout/login)"
 console_output "3. Run 'nvim' as $TARGET_USER to trigger lazy.nvim plugin installation"
 console_output "4. In nvim, run ':checkhealth' to verify everything is working"
-console_output "5. Nushell is now your default shell (log out and back in to activate)"
 console_output ""
 console_output "Note: Some plugins may require additional setup or dependencies."
