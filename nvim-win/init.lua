@@ -76,8 +76,12 @@ require("lazy").setup({
 		opts = {},
 	},
 	-- "ggml-org/llama.vim",
-	-- mlua
-	"seokgukim/mlua.nvim",
+	
+    -- mlua
+	-- "seokgukim/mlua.nvim",
+    
+    -- im-select
+    "keaising/im-select.nvim",
 })
 
 --Utils
@@ -96,15 +100,13 @@ require("config.appearance").setup()
 require("config.dap").setup()
 
 --Copilot
--- require("config.copilot").setup()
+require("config.copilot").setup()
 
 --Keymaps
 require("config.keymaps").setup()
 
 ---mLua
-require("mlua").setup()
+-- require("mlua").setup()
 
-vim.fn.chdir(vim.fn.expand("~"))
-
-vim.o.fileformat = "dos"
-vim.o.fileformats = "dos"
+-- im_select
+require("im_select").setup({})
