@@ -84,8 +84,8 @@ if [ -d "$SCRIPT_DIR" ]; then
     console_output "The script may not work as intended if the repository is not up to date."
 else
     console_output "Cloning dotfiles repository..."
-    # Use ephemeral git to clone without installing it into profile
-    su -l "$TARGET_USER" -c "export SCRIPT_DIR='$SCRIPT_DIR'; nix --extra-experimental-features 'nix-command flakes' run nixpkgs#git -- clone https://github.com/seokgukim/dotfiles.git \"\$SCRIPT_DIR\""
+    # Use system git to clone
+    su -l "$TARGET_USER" -c "export SCRIPT_DIR='$SCRIPT_DIR'; git clone https://github.com/seokgukim/dotfiles.git \"\$SCRIPT_DIR\""
 fi
 
 # Configure Nix for Flakes
@@ -102,8 +102,8 @@ fi
 
 console_output "Applying Home Manager configuration..."
 # We use 'nix run' to execute home-manager from the flake without installing it globally first
-# Nix Flakes require files to be tracked by git. We use ephemeral git to stage them.
-su -l "$TARGET_USER" -c "cd '$SCRIPT_DIR' && nix --extra-experimental-features 'nix-command flakes' run nixpkgs#git -- add . && nix run home-manager/master -- switch --flake .#$TARGET_USER -b backup"
+# Nix Flakes require files to be tracked by git.
+su -l "$TARGET_USER" -c "cd '$SCRIPT_DIR' && git add . && nix --extra-experimental-features 'nix-command flakes' run home-manager/master -- switch --flake .#$TARGET_USER -b backup"
 
 # Add current user to docker group
 if ! getent group docker > /dev/null; then
