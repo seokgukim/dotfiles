@@ -104,7 +104,7 @@ require("config.dap").setup()
 require("config.keymaps").setup()
 
 ---mLua
--- require("mlua").setup()
+require("mlua").setup()
 
 -- vawi
 require("vawi").setup()
