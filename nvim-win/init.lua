@@ -76,12 +76,10 @@ require("lazy").setup({
 		opts = {},
 	},
 	-- "ggml-org/llama.vim",
-	
     -- mlua
 	-- "seokgukim/mlua.nvim",
-    
-    -- im-select
-    "keaising/im-select.nvim",
+    -- vawi
+	"seokgukim/vawi.nvim"
 })
 
 --Utils
@@ -100,7 +98,7 @@ require("config.appearance").setup()
 require("config.dap").setup()
 
 --Copilot
-require("config.copilot").setup()
+-- require("config.copilot").setup()
 
 --Keymaps
 require("config.keymaps").setup()
@@ -108,5 +106,5 @@ require("config.keymaps").setup()
 ---mLua
 -- require("mlua").setup()
 
--- im_select
-require("im_select").setup({})
+-- vawi
+require("vawi").setup()

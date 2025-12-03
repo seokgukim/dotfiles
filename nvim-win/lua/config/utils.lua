@@ -16,7 +16,7 @@ function M.setup()
 	})
 
 	-- Git
-	vim.g.fugitive_git_executable = "/usr/bin/git"
+	vim.g.fugitive_git_executable = "git.exe"
 
 	-- Clipboard
 	vim.opt.clipboard = "unnamedplus"
