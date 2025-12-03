@@ -77,7 +77,7 @@ require("lazy").setup({
 	},
 	-- "ggml-org/llama.vim",
     -- mlua
-	-- "seokgukim/mlua.nvim",
+	"seokgukim/mlua.nvim",
     -- vawi
 	"seokgukim/vawi.nvim"
 })
