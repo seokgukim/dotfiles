@@ -90,7 +90,10 @@ fi
 
 # Configure Nix for Flakes
 mkdir -p "$TARGET_HOME/.config/nix"
-echo "experimental-features = nix-command flakes" >> "$TARGET_HOME/.config/nix/nix.conf"
+# Avoid duplicate entries
+if ! grep -q "experimental-features" "$TARGET_HOME/.config/nix/nix.conf" 2>/dev/null; then
+    echo "experimental-features = nix-command flakes" >> "$TARGET_HOME/.config/nix/nix.conf"
+fi
 chown -R "$TARGET_USER" "$TARGET_HOME/.config"
 
 # Update username in Nix files to match current user
@@ -125,7 +128,10 @@ console_output ""
 console_output "To finish setup:"
 console_output "1. Open a new terminal session or run: source $TARGET_HOME/.bashrc"
 console_output "2. Verify docker access: docker --version (may require logout/login)"
-console_output "3. Run 'nvim' as $TARGET_USER to trigger lazy.nvim plugin installation"
-console_output "4. In nvim, run ':checkhealth' to verify everything is working"
+console_output "3. Verify jujutsu (jj) is available: jj --version"
+console_output "4. Verify Ruby LSP: ruby-lsp --version"
+console_output "5. Run 'nvim' as $TARGET_USER to trigger lazy.nvim plugin installation"
+console_output "6. In nvim, run ':checkhealth' to verify everything is working"
 console_output ""
 console_output "Note: Some plugins may require additional setup or dependencies."
+console_output "Note: jujutsu provides the 'jj' command. Do not install the 'jj' package separately."

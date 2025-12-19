@@ -1,5 +1,12 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  # Ruby environment with bundler for gem management
+  rubyEnv = pkgs.ruby.withPackages (ps: with ps; [
+    ruby-lsp
+    rubocop
+  ]);
+in
 {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -30,13 +37,15 @@
     
     # Languages & Runtimes
     python3
-    ruby
+    rubyEnv  # Ruby with gems (ruby-lsp, rubocop)
     nodejs
     gcc
     gnumake
+    pkg-config  # Needed for native gem extensions
     
     # Libraries (often needed for building native extensions)
     openssl
+    openssl.dev
     readline
     zlib
     autoconf
@@ -44,6 +53,7 @@
     ncurses
     libffi
     gdbm
+    libyaml  # Required for psych gem
 
     # Tools
     docker
@@ -52,7 +62,7 @@
     yazi
     uutils-coreutils
     lazygit
-    jujutsu
+    jujutsu  # Provides 'jj' command - do NOT install 'jj' package (same thing, causes conflict)
     lazydocker
     harlequin
     btop
@@ -67,8 +77,6 @@
     nodePackages.eslint
     black
     isort
-    ruby-lsp
-    rubocop
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
@@ -95,6 +103,11 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
+    # Ruby gem native extension build support
+    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.zlib.dev}/lib/pkgconfig:${pkgs.libyaml.dev}/lib/pkgconfig";
+    # Ensure gem can find headers
+    CPATH = "${pkgs.openssl.dev}/include:${pkgs.zlib.dev}/include:${pkgs.libyaml}/include";
+    LIBRARY_PATH = "${pkgs.openssl.out}/lib:${pkgs.zlib}/lib:${pkgs.libyaml}/lib";
   };
 
   # Let Home Manager install and manage itself.
@@ -109,11 +122,6 @@
         . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
       elif [ -f ~/.nix-profile/etc/profile.d/nix.sh ]; then
         . ~/.nix-profile/etc/profile.d/nix.sh
-      fi
-
-      # Launch Nushell if available
-      if command -v nu >/dev/null 2>&1; then
-          exec nu
       fi
     '';
   };
