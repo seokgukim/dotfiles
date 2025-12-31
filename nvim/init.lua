@@ -40,7 +40,7 @@ require("lazy").setup({
 		dependencies = { "nvim-lua/plenary.nvim" },
 	},
 	--Auto completion
-	"neovim/nvim-lspconfig",
+	-- "neovim/nvim-lspconfig",
 	{
 		"hrsh7th/nvim-cmp",
 		dependencies = {
@@ -76,9 +76,9 @@ require("lazy").setup({
 		opts = {},
 	},
 	-- "ggml-org/llama.vim",
-    -- mlua
+	-- mlua
 	-- "seokgukim/mlua.nvim",
-    -- vawi
+	-- vawi
 	"seokgukim/vawi.nvim"
 })
 

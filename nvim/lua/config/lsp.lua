@@ -104,6 +104,7 @@ function M.setup()
     vim.lsp.enable("pyright")
     vim.lsp.enable("ruby_lsp")
     vim.lsp.enable("lua_ls")
+    vim.lsp.enable("ts_ls")
 end
 
 return M

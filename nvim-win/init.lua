@@ -40,7 +40,7 @@ require("lazy").setup({
 		dependencies = { "nvim-lua/plenary.nvim" },
 	},
 	--Auto completion
-	"neovim/nvim-lspconfig",
+	-- "neovim/nvim-lspconfig",
 	{
 		"hrsh7th/nvim-cmp",
 		dependencies = {
@@ -78,6 +78,7 @@ require("lazy").setup({
 	-- "ggml-org/llama.vim",
     -- mlua
 	"seokgukim/mlua.nvim",
+	"seokgukim/mlua-debugger.nvim"
     -- vawi
 	"seokgukim/vawi.nvim"
 })
@@ -105,6 +106,7 @@ require("config.keymaps").setup()
 
 ---mLua
 require("mlua").setup()
+require("mlua-debugger").setup()
 
 -- vawi
 require("vawi").setup()
