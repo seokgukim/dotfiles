@@ -37,76 +37,34 @@ else
     ARCH="arm64"
 fi
 
-# Use Nix for package management
-# Source Nix profile for target user if exists
-if [ -f "/home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh" ]; then
-    . /home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh || true
-fi
-if ! command -v nix &> /dev/null; then
-    console_output "Nix not found. Installing Nix package manager for $TARGET_USER..."
-    if [ "$(id -u)" -eq 0 ]; then
-        console_output "Running multi-user Nix daemon installer (requires root)"
-        curl -L https://nixos.org/nix/install | sh -s -- --daemon --yes
-
-        # Ensure daemon is running (for containers/non-systemd)
-        if ! pgrep -x "nix-daemon" > /dev/null; then
-             console_output "Nix daemon not running. Starting it in background..."
-             # Source the profile to get nix-daemon in path or use absolute path
-             if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
-                 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-             fi
-             nix-daemon >/dev/null 2>&1 &
-             
-             # Wait for socket
-             console_output "Waiting for Nix daemon socket..."
-             for i in {1..10}; do
-                 if [ -e /nix/var/nix/daemon-socket/socket ]; then break; fi
-                 sleep 1
-             done
-        fi
-    else
-        su - "$TARGET_USER" -c 'curl -L https://nixos.org/nix/install | sh -s -- --yes'
-    fi
-fi
-
-# Source Nix environment (Multi-user or Single-user)
-if [ -e "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]; then
-    . "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
-elif [ -f "/home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh" ]; then
-    . "/home/$TARGET_USER/.nix-profile/etc/profile.d/nix.sh"
-fi
-
-console_output "Using Nix for package management."
-
-# Get the dotfiles repository from GitHub
-if [ -d "$SCRIPT_DIR" ]; then
-    console_output "Dotfiles directory already exists at $SCRIPT_DIR, skipping clone."
-    console_output "The script may not work as intended if the repository is not up to date."
+# Detect package manager
+if command -v pacman &> /dev/null; then
+    PKG_MGR="pacman"
+    INSTALL_CMD="sudo pacman -S --needed --noconfirm"
+elif command -v apt-get &> /dev/null; then
+    PKG_MGR="apt"
+    INSTALL_CMD="sudo apt-get install -y"
 else
-    console_output "Cloning dotfiles repository..."
-    # Use system git to clone
-    su -l "$TARGET_USER" -c "export SCRIPT_DIR='$SCRIPT_DIR'; git clone https://github.com/seokgukim/dotfiles.git \"\$SCRIPT_DIR\""
+    console_output "Error: No supported package manager found (pacman/apt)."
+    exit 1
 fi
 
-# Configure Nix for Flakes
-mkdir -p "$TARGET_HOME/.config/nix"
-# Avoid duplicate entries
-if ! grep -q "experimental-features" "$TARGET_HOME/.config/nix/nix.conf" 2>/dev/null; then
-    echo "experimental-features = nix-command flakes" >> "$TARGET_HOME/.config/nix/nix.conf"
-fi
-chown -R "$TARGET_USER" "$TARGET_HOME/.config"
+console_output "Using $PKG_MGR for package management."
 
-# Update username in Nix files to match current user
-if [ "$TARGET_USER" != "seokgukim" ]; then
-    console_output "Updating configuration for user: $TARGET_USER"
-    sed -i "s/seokgukim/$TARGET_USER/g" "$SCRIPT_DIR/flake.nix"
-    sed -i "s/seokgukim/$TARGET_USER/g" "$SCRIPT_DIR/home.nix"
+# Install base dependencies
+CORE_PKGS="git vim neovim ripgrep fd fzf docker"
+if [ "$PKG_MGR" = "pacman" ]; then
+    $INSTALL_CMD $CORE_PKGS
+elif [ "$PKG_MGR" = "apt" ]; then
+    sudo apt-get update
+    $INSTALL_CMD $CORE_PKGS
 fi
 
-console_output "Applying Home Manager configuration..."
-# We use 'nix run' to execute home-manager from the flake without installing it globally first
-# Nix Flakes require files to be tracked by git.
-su -l "$TARGET_USER" -c "cd '$SCRIPT_DIR' && git add . && nix --extra-experimental-features 'nix-command flakes' run home-manager/master -- switch --flake .#$TARGET_USER -b backup"
+# Symlink dotfiles
+console_output "Linking configurations..."
+mkdir -p "$TARGET_HOME/.config"
+ln -sf "$SCRIPT_DIR/nvim" "$TARGET_HOME/.config/nvim"
+# Add other links as needed (tmux, zsh, etc.)
 
 # Add current user to docker group
 if ! getent group docker > /dev/null; then
