@@ -32,7 +32,21 @@ require("lazy").setup({
 	},
 	"theHamsta/nvim-dap-virtual-text",
 	--TreeSitter
-	"nvim-treesitter/nvim-treesitter",
+	{
+		"nvim-treesitter/nvim-treesitter",
+		build = ":TSUpdate",
+		config = function()
+			local is_windows = vim.fn.has("win32") == 1
+			require("nvim-treesitter.install").prefer_git = false
+			require("nvim-treesitter.install").compilers = is_windows and { "clang", "gcc", "cl" } or { "clang", "gcc" }
+			require("nvim-treesitter.configs").setup({
+				highlight = {
+					enable = true,
+					additional_vim_regex_highlighting = false,
+				},
+			})
+		end,
+	},
 	--Snacks
 	{
 		"folke/snacks.nvim",
