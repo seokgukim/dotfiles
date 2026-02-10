@@ -33,11 +33,25 @@ require("lazy").setup({
 	"theHamsta/nvim-dap-virtual-text",
 	--TreeSitter
 	"nvim-treesitter/nvim-treesitter",
-	--Telescope
+	--Snacks
 	{
-		"nvim-telescope/telescope.nvim",
-		tag = "0.1.8",
-		dependencies = { "nvim-lua/plenary.nvim" },
+		"folke/snacks.nvim",
+		priority = 1000,
+		lazy = false,
+		---@type snacks.Config
+		opts = {
+			bigfile = { enabled = true },
+			dashboard = { enabled = true },
+			indent = { enabled = true },
+			input = { enabled = true },
+			notifier = { enabled = true, timeout = 3000 },
+			picker = { enabled = true },
+			quickfile = { enabled = true },
+			scope = { enabled = true },
+			scroll = { enabled = true },
+			statuscolumn = { enabled = true },
+			words = { enabled = true },
+		},
 	},
 	--Auto completion
 	-- "neovim/nvim-lspconfig",
@@ -70,14 +84,20 @@ require("lazy").setup({
 	-- RSI
 	"tpope/vim-rsi",
 	-- Copilot
-	"github/copilot.vim",
+	-- "github/copilot.vim",
 	{
 		"stevearc/conform.nvim",
 		opts = {},
 	},
-	-- "ggml-org/llama.vim",
-	-- mlua
-	-- "seokgukim/mlua.nvim",
+	-- mlua (Windows only)
+	{
+		"seokgukim/mlua.nvim",
+		cond = function() return vim.fn.has("win32") == 1 end,
+	},
+	{
+		"seokgukim/mlua-debugger.nvim",
+		cond = function() return vim.fn.has("win32") == 1 end,
+	},
 	-- vawi
 	"seokgukim/vawi.nvim"
 })
@@ -98,13 +118,16 @@ require("config.appearance").setup()
 require("config.dap").setup()
 
 --Copilot
-require("config.copilot").setup()
+-- require("config.copilot").setup()
 
 --Keymaps
 require("config.keymaps").setup()
 
----mLua
--- require("mlua").setup()
+---mLua (Windows only)
+if vim.fn.has("win32") == 1 then
+    require("mlua").setup()
+    require("mlua-debugger").setup()
+end
 
 -- vawi
 require("vawi").setup()

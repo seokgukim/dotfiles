@@ -94,17 +94,34 @@ function M.setup()
 	cmp.setup.cmdline(":", {
 		mapping = cmp.mapping.preset.cmdline(),
 		sources = cmp.config.sources({
-			{ name = "path" },
+			{ 
+				name = "path",
+				option = {
+					get_cwd = function(params)
+						local cmdline = params.context.cursor_before_line
+						if cmdline:match('^%s*CP%s') or cmdline:match('^%s*MV%s') then
+							return vim.fn.getcwd()
+						end
+						return vim.fn.getcwd()
+					end
+				}
+			},
 		}, {
 			{ name = "cmdline" },
 		}),
 	})
 
-    vim.lsp.enable("clangd")
-    vim.lsp.enable("pyright")
-    vim.lsp.enable("ruby_lsp")
-    vim.lsp.enable("lua_ls")
-    vim.lsp.enable("ts_ls")
+    local function enable_if_exists(cmd)
+        if vim.fn.executable(cmd) == 1 then
+            vim.lsp.enable(cmd)
+        end
+    end
+
+    enable_if_exists("clangd")
+    enable_if_exists("pyright")
+    enable_if_exists("ruby_lsp")
+    enable_if_exists("lua_ls")
+    enable_if_exists("ts_ls")
 end
 
 return M

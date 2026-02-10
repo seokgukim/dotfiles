@@ -1,22 +1,24 @@
 local M = {}
 
 function M.setup()
+    local is_windows = vim.fn.has("win32") == 1
+
 	--TreeSitter
 	require("nvim-treesitter.install").prefer_git = false
-	require("nvim-treesitter.install").compilers = { "clang", "gcc" }
+	require("nvim-treesitter.install").compilers = is_windows and { "clang", "gcc", "cl" } or { "clang", "gcc" }
 	require("nvim-treesitter.configs").setup({
 		highlight = {
 			enable = true,
-			-- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-			-- Set this to `true` if you depend on "syntax" being enabled (like for indentation).
-			-- Using this option may slow down your editor, and you may see some duplicate highlights.
-			-- Instead of true it can also be a list of languages
 			additional_vim_regex_highlighting = false,
 		},
 	})
 
 	-- Git
-	vim.g.fugitive_git_executable = "/usr/bin/git"
+    if is_windows then
+	    vim.g.fugitive_git_executable = "git.exe"
+    else
+	    vim.g.fugitive_git_executable = "/usr/bin/git"
+    end
 
 	-- Clipboard
 	vim.opt.clipboard = "unnamedplus"
