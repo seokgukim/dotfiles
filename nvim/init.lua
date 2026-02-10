@@ -97,8 +97,8 @@ require("lazy").setup({
 	},
 	-- RSI
 	"tpope/vim-rsi",
-	-- Copilot
-	-- "github/copilot.vim",
+	-- Auto LLM
+	-- "ggml-org/llama.vim",
 	{
 		"stevearc/conform.nvim",
 		opts = {},
@@ -139,8 +139,25 @@ require("config.keymaps").setup()
 
 ---mLua (Windows only)
 if vim.fn.has("win32") == 1 then
-    require("mlua").setup()
-    require("mlua-debugger").setup()
+    require("mlua").setup({
+		keymaps = {
+    		-- Set to false to disable a specific keymap, or change the key
+			hover = "K",
+			definition = "gd",
+			references = "gr",
+			declaration = false,
+			implementation = false,
+			rename = "<leader>rn",
+			code_action = "<leader>ca",
+			format = "<leader>f",
+			toggle_inlay_hints = false,
+  		},
+		deprecated_commands = false
+	})
+	
+    require("mlua-debugger").setup({
+		deprecated_commands = false
+	})
 end
 
 -- vawi
