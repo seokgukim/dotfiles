@@ -10,15 +10,17 @@ console_output() {
 console_output "Starting dotfiles setup..."
 
 # Get the user who ran the script
-if [ -n "$SUDO_USER" ]; then
+if [ -n "${SUDO_USER:-}" ]; then
     TARGET_USER="$SUDO_USER"
     TARGET_HOME="/home/$SUDO_USER"
-elif [ -z "$USER" ]; then
-    console_output "Error: USER environment variable is not set"
-    exit 1
 else
-    TARGET_USER="$USER"
+    TARGET_USER=$(id -un)
     TARGET_HOME="$HOME"
+fi
+
+if [ -z "$TARGET_USER" ]; then
+    console_output "Error: Could not determine target user"
+    exit 1
 fi
 
 # Verify target user exists
@@ -52,13 +54,22 @@ fi
 console_output "Using $PKG_MGR for package management."
 
 # Install base dependencies
-CORE_PKGS="git vim neovim ripgrep fd fzf docker"
+CORE_PKGS="git vim neovim ripgrep fd-find fzf locales fonts-noto-cjk language-pack-ko language-pack-ja"
 if [ "$PKG_MGR" = "pacman" ]; then
-    $INSTALL_CMD $CORE_PKGS
+    $INSTALL_CMD git vim neovim ripgrep fd fzf noto-fonts-cjk
 elif [ "$PKG_MGR" = "apt" ]; then
+    # Neovim unstable PPA for 0.11+
+    sudo add-apt-repository ppa:neovim-ppa/unstable -y
     sudo apt-get update
     $INSTALL_CMD $CORE_PKGS
 fi
+
+# Set locale for CJK support (without changing system language)
+console_output "Setting up locales..."
+if [ "$PKG_MGR" = "apt" ]; then
+    sudo locale-gen ko_KR.UTF-8 ja_JP.UTF-8
+fi
+# Note: We keep LANG=en_US.UTF-8 for the system to avoid non-ASCII paths
 
 # Symlink dotfiles
 console_output "Linking configurations..."

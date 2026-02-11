@@ -113,7 +113,10 @@ require("lazy").setup({
 		cond = function() return vim.fn.has("win32") == 1 end,
 	},
 	-- vawi
-	"seokgukim/vawi.nvim"
+	{
+		"seokgukim/vawi.nvim",
+		cond = function() return vim.fn.has("win32") == 1 end,
+	}
 })
 
 --Utils
@@ -161,4 +164,6 @@ if vim.fn.has("win32") == 1 then
 end
 
 -- vawi
-require("vawi").setup()
+if vim.fn.has("win32") == 1 then
+    require("vawi").setup()
+end
