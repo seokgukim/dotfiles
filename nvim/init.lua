@@ -11,6 +11,7 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+local is_windows = vim.fn.has("win32") == 1 -- Windos detect
 require("lazy").setup({
 	--Theme
 	"EdenEast/nightfox.nvim",
@@ -21,25 +22,24 @@ require("lazy").setup({
 	"mattn/emmet-vim",
 	--Git
 	"tpope/vim-fugitive",
-	"airblade/vim-gitgutter",
+	-- "airblade/vim-gitgutter",
 	--DAP
-	"mfussenegger/nvim-dap",
-	"mfussenegger/nvim-dap-python",
-	"suketa/nvim-dap-ruby",
-	{
-		"rcarriga/nvim-dap-ui",
-		dependencies = { "nvim-neotest/nvim-nio" },
-	},
-	"theHamsta/nvim-dap-virtual-text",
+	-- "mfussenegger/nvim-dap",
+	-- "mfussenegger/nvim-dap-python",
+	-- "suketa/nvim-dap-ruby",
+	-- {
+	-- 	"rcarriga/nvim-dap-ui",
+	-- 	dependencies = { "nvim-neotest/nvim-nio" },
+	-- },
+	-- "theHamsta/nvim-dap-virtual-text",
 	--TreeSitter
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
 		config = function()
-			local is_windows = vim.fn.has("win32") == 1
 			require("nvim-treesitter.install").prefer_git = false
 			require("nvim-treesitter.install").compilers = is_windows and { "clang", "gcc", "cl" } or { "clang", "gcc" }
-			require("nvim-treesitter.configs").setup({
+			require("nvim-treesitter").setup({
 				highlight = {
 					enable = true,
 					additional_vim_regex_highlighting = false,
@@ -47,12 +47,29 @@ require("lazy").setup({
 			})
 		end,
 	},
+	{
+		"nvim-treesitter/nvim-treesitter",
+		build = ":TSUpdate",
+		opts = {
+				ensure_installed = { "c", "lua", "vim", "vimdoc", "query" },
+				auto_install = true,
+				highlight = {
+					enable = true, -- Enable syntax highlighting
+				},
+				indent = {
+					enable = true, -- Enable indentation
+				},
+			},
+			config = function(_, opts)
+		  		-- This function is called once the plugin is loaded
+		  		require("nvim-treesitter").setup(opts)
+			end,
+	},
 	--Snacks
 	{
 		"folke/snacks.nvim",
 		priority = 1000,
 		lazy = false,
-		---@type snacks.Config
 		opts = {
 			bigfile = { enabled = true },
 			dashboard = { enabled = true },
@@ -96,7 +113,7 @@ require("lazy").setup({
 		version = "^1.0.0", -- optional: only update when a new 1.x version is released
 	},
 	-- RSI
-	"tpope/vim-rsi",
+	-- "tpope/vim-rsi",
 	-- Auto LLM
 	-- "ggml-org/llama.vim",
 	{
@@ -106,16 +123,16 @@ require("lazy").setup({
 	-- mlua (Windows only)
 	{
 		"seokgukim/mlua.nvim",
-		cond = function() return vim.fn.has("win32") == 1 end,
+		cond = function() return is_windows end,
 	},
 	{
 		"seokgukim/mlua-debugger.nvim",
-		cond = function() return vim.fn.has("win32") == 1 end,
+		cond = function() return is_windows end,
 	},
 	-- vawi
 	{
 		"seokgukim/vawi.nvim",
-		cond = function() return vim.fn.has("win32") == 1 end,
+		cond = function() return is_windows end,
 	}
 })
 
@@ -132,16 +149,13 @@ require("config.formatter").setup()
 require("config.appearance").setup()
 
 --DAP
-require("config.dap").setup()
-
---Copilot
--- require("config.copilot").setup()
+-- require("config.dap").setup()
 
 --Keymaps
 require("config.keymaps").setup()
 
 ---mLua (Windows only)
-if vim.fn.has("win32") == 1 then
+if is_windows then
     require("mlua").setup({
 		keymaps = {
     		-- Set to false to disable a specific keymap, or change the key
@@ -164,6 +178,6 @@ if vim.fn.has("win32") == 1 then
 end
 
 -- vawi
-if vim.fn.has("win32") == 1 then
+if is_windows then
     require("vawi").setup()
 end

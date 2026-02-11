@@ -24,13 +24,13 @@ function M.setup()
 	vim.api.nvim_set_keymap("v", "<leader>p", '"+p', { noremap = true, silent = true })
 
 	-- Buffers
-	vim.api.nvim_set_keymap("n", "<leader>bd", ":bd<CR>", { noremap = true, silent = true })
-	vim.api.nvim_set_keymap("n", "<leader>bn", ":bnext<CR>", { noremap = true, silent = true })
-	vim.api.nvim_set_keymap("n", "<leader>bp", ":bprevious<CR>", { noremap = true, silent = true })
-	vim.api.nvim_set_keymap("n", "<leader>bl", ":buffers<CR>:b ", { noremap = true, silent = true })
-	for i = 1, 9 do
-		vim.api.nvim_set_keymap("n", "<leader>b" .. i, ":buffer " .. i .. "<CR>", { noremap = true, silent = true })
-	end
+	-- vim.api.nvim_set_keymap("n", "<leader>bd", ":bd<CR>", { noremap = true, silent = true })
+	-- vim.api.nvim_set_keymap("n", "<leader>bn", ":bnext<CR>", { noremap = true, silent = true })
+	-- vim.api.nvim_set_keymap("n", "<leader>bp", ":bprevious<CR>", { noremap = true, silent = true })
+	-- vim.api.nvim_set_keymap("n", "<leader>bl", ":buffers<CR>:b ", { noremap = true, silent = true })
+	-- for i = 1, 9 do
+	-- 	vim.api.nvim_set_keymap("n", "<leader>b" .. i, ":buffer " .. i .. "<CR>", { noremap = true, silent = true })
+	-- end
 
 	-- Snacks Pickers (Replacing Telescope)
 	local function map(mode, lhs, rhs, desc)
@@ -38,7 +38,7 @@ function M.setup()
 	end
 
 	map("n", "<leader>ff", function() Snacks.picker.files() end, "Find Files")
-	map("n", "<leader>fg", function() Snacks.picker.grep() end, "Live Grep")
+	map("n", "<leader>/", function() Snacks.picker.grep() end, "Live Grep")
 	map("n", "<leader>fb", function() Snacks.picker.buffers() end, "Buffers")
 	map("n", "<leader>fh", function() Snacks.picker.help() end, "Help Tags")
 	map("n", "<leader>fr", function() Snacks.picker.recent() end, "Recent Files")
