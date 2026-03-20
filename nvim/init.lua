@@ -1,4 +1,16 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+vim.opt.rtp:append(vim.fn.stdpath("data") .. "/site")
+
+-- Prevent Tree-sitter parser errors from blocking Neovim startup
+local ts_start = vim.treesitter.start
+vim.treesitter.start = function(bufnr, lang)
+	local ok, _ = pcall(ts_start, bufnr, lang)
+	if not ok then
+		-- Fallback to standard regex highlighting if TS fails
+		vim.bo[bufnr or 0].syntax = lang
+	end
+end
+
 if not vim.loop.fs_stat(lazypath) then
 	vim.fn.system({
 		"git",
@@ -36,34 +48,23 @@ require("lazy").setup({
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
-		config = function()
-			require("nvim-treesitter.install").prefer_git = false
-			require("nvim-treesitter.install").compilers = is_windows and { "clang", "gcc", "cl" } or { "clang", "gcc" }
-			require("nvim-treesitter").setup({
-				highlight = {
-					enable = true,
-					additional_vim_regex_highlighting = false,
-				},
-			})
-		end,
-	},
-	{
-		"nvim-treesitter/nvim-treesitter",
-		build = ":TSUpdate",
 		opts = {
-				ensure_installed = { "c", "lua", "vim", "vimdoc", "query" },
-				auto_install = true,
-				highlight = {
-					enable = true, -- Enable syntax highlighting
-				},
-				indent = {
-					enable = true, -- Enable indentation
-				},
+			ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline" },
+			auto_install = true,
+			highlight = {
+				enable = true,
+				additional_vim_regex_highlighting = false,
 			},
-			config = function(_, opts)
-		  		-- This function is called once the plugin is loaded
-		  		require("nvim-treesitter").setup(opts)
-			end,
+			indent = {
+				enable = true,
+			},
+		},
+		config = function(_, opts)
+			local install = require("nvim-treesitter.install")
+			install.prefer_git = true
+			install.compilers = { "/usr/bin/gcc", "gcc", "clang" }
+			require("nvim-treesitter").setup(opts)
+		end,
 	},
 	--Snacks
 	{
@@ -143,10 +144,10 @@ require("lazy").setup({
 	  },
 	  cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
 	},
-	-- mlua (Windows only)
+	-- mlua (Windows only, but testing local now)
 	{
-		"seokgukim/mlua.nvim",
-		cond = function() return is_windows end,
+		dir = "~/projects/mlua.nvim",
+		-- cond = function() return is_windows end,
 	},
 	{
 		"seokgukim/mlua-debugger.nvim",
@@ -177,9 +178,14 @@ require("config.appearance").setup()
 --Keymaps
 require("config.keymaps").setup()
 
----mLua (Windows only)
-if is_windows then
+---mLua (Windows only, but testing local now)
+-- if is_windows then
     require("mlua").setup({
+		handlers = {
+			["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+				syntax = false,
+			}),
+		},
 		keymaps = {
     		-- Set to false to disable a specific keymap, or change the key
 			hover = "K",
@@ -195,10 +201,12 @@ if is_windows then
 		deprecated_commands = false
 	})
 	
-    require("mlua-debugger").setup({
-		deprecated_commands = false
-	})
-end
+    if is_windows then
+        require("mlua-debugger").setup({
+            deprecated_commands = false
+        })
+    end
+-- end
 
 -- vawi
 if is_windows then
