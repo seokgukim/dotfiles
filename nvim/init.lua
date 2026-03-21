@@ -144,7 +144,7 @@ require("lazy").setup({
 	  },
 	  cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
 	},
-	-- mlua (Windows only, but testing local now)
+	-- mlua LSP + Tree-sitter plugin (local dev)
 	{
 		dir = "~/projects/mlua.nvim",
 		-- cond = function() return is_windows end,
@@ -178,35 +178,26 @@ require("config.appearance").setup()
 --Keymaps
 require("config.keymaps").setup()
 
----mLua (Windows only, but testing local now)
--- if is_windows then
-    require("mlua").setup({
-		handlers = {
-			["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-				syntax = false,
-			}),
-		},
-		keymaps = {
-    		-- Set to false to disable a specific keymap, or change the key
-			hover = "K",
-			definition = "gd",
-			references = "gr",
-			declaration = false,
-			implementation = false,
-			rename = "<leader>rn",
-			code_action = "<leader>ca",
-			format = "<leader>f",
-			toggle_inlay_hints = false,
-  		},
-		deprecated_commands = false
-	})
-	
+---mLua setup
+require("mlua").setup({
+	keymaps = {
+		hover = "K",
+		definition = "gd",
+		references = "gr",
+		declaration = false,
+		implementation = false,
+		rename = "<leader>rn",
+		code_action = "<leader>ca",
+		format = "<leader>f",
+		toggle_inlay_hints = false,
+	},
+})
+
     if is_windows then
         require("mlua-debugger").setup({
             deprecated_commands = false
         })
     end
--- end
 
 -- vawi
 if is_windows then
