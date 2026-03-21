@@ -146,7 +146,9 @@ require("lazy").setup({
 	},
 	-- mlua LSP + Tree-sitter plugin (local dev)
 	{
-		dir = "~/projects/mlua.nvim",
+		"seokgukim/mlua.nvim",
+		branch = "dev",
+		-- dir = "~/projects/mlua.nvim",
 		-- cond = function() return is_windows end,
 	},
 	{
