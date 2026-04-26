@@ -32,11 +32,22 @@ ENV LANG=ko_KR.UTF-8
 ENV LANGUAGE=ko_KR:ko
 ENV LC_ALL=ko_KR.UTF-8
 
-# Install Neovim 0.11+ (using unstable PPA)
-# Improved resilience for GPG issues
-RUN add-apt-repository ppa:neovim-ppa/unstable -y && \
-    apt-get update -y || true && \
-    apt-get install -y neovim && \
+# Install Neovim. Prefer the distro package when its candidate is >= 0.12.0;
+# otherwise fall back to ppa:neovim-ppa/unstable. Mirrors scripts/setup.sh.
+RUN set -eu; \
+    apt-get update -y; \
+    cand=$(apt-cache policy neovim | awk '/Candidate:/ {print $2; exit}'); \
+    cand_stripped="${cand#*:}"; \
+    if [ -n "$cand_stripped" ] && [ "$cand_stripped" != "(none)" ] \
+       && dpkg --compare-versions "$cand_stripped" ge 0.12.0; then \
+        echo "distro neovim ${cand} is >= 0.12.0; skipping PPA"; \
+    else \
+        echo "distro neovim candidate=${cand:-unknown}; adding ppa:neovim-ppa/unstable"; \
+        apt-get install -y software-properties-common; \
+        add-apt-repository ppa:neovim-ppa/unstable -y; \
+        apt-get update -y; \
+    fi; \
+    apt-get install -y neovim; \
     rm -rf /var/lib/apt/lists/*
 
 # Set up user and grant sudo access
@@ -52,6 +63,6 @@ COPY --chown=kawi_test:kawi_test . /home/kawi_test/dotfiles
 # Note: setup.sh might need to be run without sudo in the container context
 # or adjusted to skip interactive parts.
 WORKDIR /home/kawi_test/dotfiles
-RUN chmod +x setup.sh
+RUN chmod +x scripts/setup.sh
 
 CMD ["/bin/bash"]

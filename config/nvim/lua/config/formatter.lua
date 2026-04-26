@@ -4,7 +4,7 @@ function M.setup()
 	require("conform").setup({
 		formatters_by_ft = {
 			lua = { "stylua" },
-			python = { "black" },
+			python = { "isort", "black" },
 			javascript = { "prettier" },
 			typescript = { "prettier" },
 			html = { "prettier" },
@@ -14,11 +14,14 @@ function M.setup()
 			yaml = { "prettier" },
 			cpp = { "clang_format" },
 			c = { "clang_format" },
-            ruby = { "rubocop" },
+			ruby = { "rubocop" },
+			sh = { "shfmt" },
+			bash = { "shfmt" },
+			nix = { "nixpkgs_fmt" },
 		},
 
 		format_on_save = {
-			lsp_fallback = true,
+			lsp_format = "fallback",
 			timeout_ms = 1000,
 		},
 	})
