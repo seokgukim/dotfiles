@@ -8,7 +8,6 @@ dotfiles/
 ├── config/                         # XDG_CONFIG_HOME content (symlinked into ~/.config)
 │   └── nvim/                       # Neovim configuration
 │       ├── init.lua                # Bootstraps lazy.nvim and loads config modules
-│       ├── lazy-lock.json          # Plugin version lock file
 │       ├── lsp/                    # Neovim 0.12 native LSP server config files
 │       │   │                       # (discovered on runtimepath; merged by
 │       │   │                       # vim.lsp.config when enabled via
