@@ -11,9 +11,15 @@ bash ~/dotfiles/scripts/install-nix.sh
 
 The installer:
 
+- Downloads the official installer from `nixos.org` when Nix is missing.
+  The default latest-wins path intentionally relies on HTTPS; set
+  `NIX_INSTALL_SHA256` to enforce checksum verification for a specific
+  download when you want explicit pinning.
 - Installs the tool index from `nix/packages.nix` using
   `nix profile add --file` (preferred), falling back to `nix-env -if`
-  on installations without the new-style `nix` CLI.
+  on installations without the new-style `nix` CLI. Re-running the script
+  replaces the existing `seokgukim-dotfiles-tools` profile entry before adding
+  it again, so repeated runs stay idempotent on the new CLI as well.
 - Symlinks `config/nvim/` to `~/.config/nvim`
 - Symlinks `home/.vimrc` to `~/.vimrc`
 
@@ -30,6 +36,14 @@ NIX_INSTALL_MODE=no-daemon bash ~/dotfiles/scripts/install-nix.sh
 The official installer may require `xz-utils` (or a compatible `xz`/`unxz`
 command) to unpack the downloaded tarball. `scripts/install-nix.sh` checks this
 before it starts a new Nix install.
+
+To override the installer source or add explicit checksum verification:
+
+```bash
+NIX_INSTALL_URL=https://nixos.org/nix/install \
+NIX_INSTALL_SHA256=<expected-sha256> \
+  bash ~/dotfiles/scripts/install-nix.sh
+```
 
 ### Validation without installing
 
@@ -121,9 +135,38 @@ The script will:
     releases. When apt cannot find it the script logs a hint to install
     it via `cargo install tree-sitter-cli` or `npm i -g tree-sitter-cli`.
 - For apt: prefer the distro `neovim` package when its candidate version is
-  `>= 0.12.0`; otherwise add `ppa:neovim-ppa/unstable` automatically
+  `>= 0.12.0`
+- If a compatible `nvim` is already on `PATH`, keep using it and skip apt-side
+  Neovim management
+- On Ubuntu only, if the distro `neovim` candidate is older than `0.12.0`,
+  rerun with `ALLOW_NEOVIM_PPA=1` to opt into `ppa:neovim-ppa/unstable`;
+  otherwise the script exits with guidance to use the Nix installer or install
+  a newer Neovim manually. If the PPA still does not expose `>= 0.12.0`, the
+  script fails instead of silently continuing with an older Neovim
+- On Debian/non-Ubuntu apt hosts, install Ubuntu language-pack packages only
+  when they exist; the script skips that Ubuntu-specific dependency set on
+  other apt-based distributions
 - Symlink Neovim config to `~/.config/nvim` and Vim config to `~/.vimrc`
 - Add the user to the `docker` group
+
+Ubuntu hosts that need the Neovim PPA must opt in explicitly:
+
+```bash
+sudo ALLOW_NEOVIM_PPA=1 bash scripts/setup.sh
+```
+
+### Docker validation for the legacy path
+
+The repository-local Docker baseline now exercises `scripts/setup.sh` during the
+image build instead of only preparing the environment. It seeds the container
+with a supported Neovim tarball first, so the legacy installer can validate the
+rest of the bootstrap flow without depending on Launchpad PPA reachability. The
+build resolves the latest Neovim release metadata first and verifies the tarball
+checksum before extracting it:
+
+```bash
+docker build -f docker/Dockerfile.test .
+```
 
 ## Windows
 

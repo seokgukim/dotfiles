@@ -4,51 +4,31 @@ FROM ubuntu:24.04
 # Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Fix potential GPG/Time issues
-RUN sed -i 's|http://archive.ubuntu.com/ubuntu/|http://mirror.kakao.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources && \
-    sed -i 's|http://security.ubuntu.com/ubuntu/|http://mirror.kakao.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources
-
-RUN apt-get update -y --allow-insecure-repositories && \
-    apt-get install -y --allow-unauthenticated \
-    git \
-    curl \
+# Minimal bootstrap needed to run the legacy installer itself.
+RUN apt-get update -y && \
+    apt-get install -y \
     sudo \
+    curl \
+    jq \
     gnupg \
     ca-certificates \
-    build-essential \
-    software-properties-common \
-    unzip \
-    ripgrep \
-    fd-find \
-    locales \
-    fonts-noto-cjk \
-    language-pack-ko \
-    language-pack-ja \
+    tar \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Set locale for CJK support
-RUN locale-gen ko_KR.UTF-8 ja_JP.UTF-8
-ENV LANG=ko_KR.UTF-8
-ENV LANGUAGE=ko_KR:ko
-ENV LC_ALL=ko_KR.UTF-8
-
-# Install Neovim. Prefer the distro package when its candidate is >= 0.12.0;
-# otherwise fall back to ppa:neovim-ppa/unstable. Mirrors scripts/setup.sh.
-RUN set -eu; \
-    apt-get update -y; \
-    cand=$(apt-cache policy neovim | awk '/Candidate:/ {print $2; exit}'); \
-    cand_stripped="${cand#*:}"; \
-    if [ -n "$cand_stripped" ] && [ "$cand_stripped" != "(none)" ] \
-       && dpkg --compare-versions "$cand_stripped" ge 0.12.0; then \
-        echo "distro neovim ${cand} is >= 0.12.0; skipping PPA"; \
-    else \
-        echo "distro neovim candidate=${cand:-unknown}; adding ppa:neovim-ppa/unstable"; \
-        apt-get install -y software-properties-common; \
-        add-apt-repository ppa:neovim-ppa/unstable -y; \
-        apt-get update -y; \
-    fi; \
-    apt-get install -y neovim; \
-    rm -rf /var/lib/apt/lists/*
+ARG NVIM_RELEASE_API_URL=https://api.github.com/repos/neovim/neovim/releases/latest
+RUN release_json="$(curl -fsSL "$NVIM_RELEASE_API_URL")" && \
+    nvim_tarball_url="$(printf '%s' "$release_json" | jq -er '.assets[] | select(.name == "nvim-linux-x86_64.tar.gz") | .browser_download_url')" && \
+    nvim_tarball_sha256="$(printf '%s' "$release_json" | jq -er '.assets[] | select(.name == "nvim-linux-x86_64.tar.gz") | .digest | select(startswith("sha256:")) | ltrimstr("sha256:")')" && \
+    test -n "$nvim_tarball_url" && \
+    test -n "$nvim_tarball_sha256" && \
+    test "${#nvim_tarball_sha256}" -eq 64 && \
+    curl -fsSL "$nvim_tarball_url" -o /tmp/nvim-linux-x86_64.tar.gz && \
+    printf '%s  %s\n' "$nvim_tarball_sha256" /tmp/nvim-linux-x86_64.tar.gz | sha256sum -c - && \
+    rm -rf /opt/nvim-linux-x86_64 && \
+    tar -C /opt -xzf /tmp/nvim-linux-x86_64.tar.gz && \
+    ln -sfn /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim && \
+    rm -f /tmp/nvim-linux-x86_64.tar.gz
 
 # Set up user and grant sudo access
 RUN useradd -ms /bin/bash kawi_test && \
@@ -59,10 +39,17 @@ WORKDIR /home/kawi_test
 # Copy dotfiles
 COPY --chown=kawi_test:kawi_test . /home/kawi_test/dotfiles
 
-# Run setup (simulating a fresh install)
-# Note: setup.sh might need to be run without sudo in the container context
-# or adjusted to skip interactive parts.
+# Run the legacy installer with a supported Neovim already on PATH, then verify
+# the linked config exists.
 WORKDIR /home/kawi_test/dotfiles
-RUN chmod +x scripts/setup.sh
+RUN chmod +x scripts/setup.sh && \
+    sudo bash scripts/setup.sh && \
+    test -L /home/kawi_test/.config/nvim && \
+    test -L /home/kawi_test/.vimrc && \
+    nvim --version | head -n 1
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 CMD ["/bin/bash"]

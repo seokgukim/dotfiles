@@ -11,6 +11,18 @@ REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 PACKAGES_FILE="$REPO_ROOT/nix/packages.nix"
 DRY_RUN=0
 NIX_INSTALL_MODE="${NIX_INSTALL_MODE:-auto}"
+NIX_INSTALL_URL="${NIX_INSTALL_URL:-https://nixos.org/nix/install}"
+NIX_INSTALL_SHA256="${NIX_INSTALL_SHA256:-}"
+PROFILE_ENTRY_NAME="seokgukim-dotfiles-tools"
+INSTALLER_FILE=""
+
+cleanup_installer() {
+    if [ -n "$INSTALLER_FILE" ] && [ -f "$INSTALLER_FILE" ]; then
+        rm -f "$INSTALLER_FILE"
+    fi
+}
+
+trap cleanup_installer EXIT
 
 if [ "${1:-}" = "--dry-run" ]; then
     DRY_RUN=1
@@ -19,6 +31,8 @@ elif [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
     printf '\nEnvironment:\n'
     printf '  NIX_INSTALL_MODE=auto|daemon|no-daemon  Installer mode when Nix is missing\n'
     printf '                                          (default: auto = daemon on Linux+systemd+sudo, otherwise no-daemon)\n'
+    printf '  NIX_INSTALL_URL=<url>                   Installer URL to download when Nix is missing\n'
+    printf '  NIX_INSTALL_SHA256=<sha256>             Optional SHA-256 for the downloaded installer\n'
     exit 0
 elif [ "${1:-}" != "" ]; then
     log "Error: unknown option: $1"
@@ -50,6 +64,10 @@ require_installer_prereqs() {
     fi
     if ! command -v xz >/dev/null 2>&1 && ! command -v unxz >/dev/null 2>&1; then
         log "Error: xz-utils (or a compatible xz/unxz command) is required by the official Nix installer"
+        exit 1
+    fi
+    if ! command -v sha256sum >/dev/null 2>&1; then
+        log "Error: sha256sum is required to verify the downloaded Nix installer"
         exit 1
     fi
 }
@@ -100,12 +118,41 @@ have_new_nix_cli() {
     [ "$_HAS_NEW_NIX_CLI" = 1 ]
 }
 
+nix_cli() {
+    nix --extra-experimental-features nix-command "$@"
+}
+
+nix_profile_remove_existing() {
+    local name
+    while IFS= read -r name; do
+        [ "$name" = "$PROFILE_ENTRY_NAME" ] || continue
+        log "Removing existing nix profile entry '$PROFILE_ENTRY_NAME' before reinstalling"
+        nix_cli profile remove "$name"
+    done < <(nix_cli profile list 2>/dev/null | awk -F': *' '/^Name:/ {print $2}')
+}
+
 nix_profile_add() {
-    if nix --extra-experimental-features nix-command profile add --help >/dev/null 2>&1; then
-        nix --extra-experimental-features nix-command profile add --file "$PACKAGES_FILE"
+    nix_profile_remove_existing
+    if nix_cli profile add --help >/dev/null 2>&1; then
+        nix_cli profile add --file "$PACKAGES_FILE"
     else
         # Older new-style Nix releases exposed this operation as `install`.
-        nix --extra-experimental-features nix-command profile install --file "$PACKAGES_FILE"
+        nix_cli profile install --file "$PACKAGES_FILE"
+    fi
+}
+
+download_nix_installer() {
+    INSTALLER_FILE="$(mktemp "${TMPDIR:-/tmp}/nix-install.XXXXXX")"
+    log "Downloading Nix installer from $NIX_INSTALL_URL"
+    curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
+        --output "$INSTALLER_FILE" "$NIX_INSTALL_URL"
+    if [ -n "$NIX_INSTALL_SHA256" ]; then
+        if ! printf '%s  %s\n' "$NIX_INSTALL_SHA256" "$INSTALLER_FILE" | sha256sum -c - >/dev/null; then
+            log "Error: checksum mismatch while verifying the downloaded Nix installer"
+            exit 1
+        fi
+    else
+        log "No NIX_INSTALL_SHA256 provided; relying on HTTPS for installer delivery from $NIX_INSTALL_URL"
     fi
 }
 
@@ -126,8 +173,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
     # `nix profile add` has no --dry-run flag, so use `nix build --dry-run`
     # against the same file expression, falling back to legacy nix-env.
     if have_new_nix_cli; then
-        nix --extra-experimental-features nix-command \
-            build --dry-run --file "$PACKAGES_FILE" --no-link
+        nix_cli build --dry-run --file "$PACKAGES_FILE" --no-link
     else
         nix-env -if "$PACKAGES_FILE" --dry-run
     fi
@@ -139,7 +185,8 @@ if ! command -v nix-env >/dev/null 2>&1 && ! have_new_nix_cli; then
     INSTALL_MODE="$(resolve_install_mode)"
     log "Nix not found; installing with the official installer (--$INSTALL_MODE)"
     require_installer_prereqs
-    curl -L https://nixos.org/nix/install | sh -s -- "--$INSTALL_MODE"
+    download_nix_installer
+    sh "$INSTALLER_FILE" "--$INSTALL_MODE"
     load_nix_profile
 fi
 
