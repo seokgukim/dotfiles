@@ -26,6 +26,16 @@ return {
 		cmd = { "G", "Git", "Gdiffsplit", "Gread", "Gwrite" },
 	},
 
+	-- Git signs in the signcolumn for changed lines/hunks
+	{
+		"lewis6991/gitsigns.nvim",
+		event = "BufReadPre",
+		config = function()
+			require("gitsigns").setup({})
+		end,
+	},
+
+
 	-- Tree-sitter (nvim-treesitter `main` branch).
 	-- The main branch dropped the `opts`-style API: parsers are installed
 	-- by `require('nvim-treesitter').install({...})` and highlighting is
