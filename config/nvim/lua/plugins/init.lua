@@ -175,7 +175,7 @@ return {
 			-- runtime files, otherwise copilot.vim binds <Tab> in insert
 			-- mode and races with nvim-cmp.
 			vim.g.copilot_enabled = false
-			vim.g.copilot_no_tab_map = true
+			-- vim.g.copilot_no_tab_map = true
 		end,
 		config = function()
 			vim.keymap.set("n", "<leader><f1>", function()
@@ -184,6 +184,8 @@ return {
 			end, { desc = "Toggle Copilot" })
 		end,
 	},
+
+	-- "ggml-org/llama.vim",
 
 	{
 		"folke/sidekick.nvim",
