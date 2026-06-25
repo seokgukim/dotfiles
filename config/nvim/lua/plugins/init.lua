@@ -147,6 +147,7 @@ return {
 	},
 	{
 		"seokgukim/mlua-debugger.nvim",
+		branch = "dev",
 		cond = function()
 			return is_windows
 		end,
