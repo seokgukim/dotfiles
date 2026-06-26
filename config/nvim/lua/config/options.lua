@@ -14,11 +14,22 @@ M.lang_map = {
 
 M.ts_filetypes = {
 	"c", "cpp", "css", "help", "html", "javascript", "javascriptreact",
-	"json", "lua", "markdown", "nix", "python", "query", "ruby", "sh",
+	"json", "lua", "markdown", "mlua", "nix", "python", "query", "ruby", "sh",
 	"toml", "typescript", "typescriptreact", "vim", "yaml", "zsh",
 }
 
 function M.setup()
+	-- Register custom filetypes and Treesitter languages ------------------
+	vim.filetype.add({
+		extension = {
+			mlua = "mlua",
+		},
+	})
+
+	if vim.treesitter.language.register then
+		vim.treesitter.language.register("mlua", "mlua")
+	end
+
 	-- Editor options ------------------------------------------------------
 	vim.opt.termguicolors = true
 	vim.opt.tabstop = 4
