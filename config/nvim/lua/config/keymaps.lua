@@ -1,4 +1,4 @@
-local function parse_csv_text(text)
+local function parse_delimited_text(text, delimiter)
 	local rows = {}
 	local current_row = {}
 	local current_field = ""
@@ -34,7 +34,7 @@ local function parse_csv_text(text)
 					current_field = current_field .. c
 					i = i + 1
 				end
-			elseif c == "," then
+			elseif c == delimiter then
 				table.insert(current_row, current_field)
 				current_field = ""
 				i = i + 1
@@ -61,12 +61,61 @@ local function parse_csv_text(text)
 	return rows
 end
 
+local function parse_csv_text(text)
+	return parse_delimited_text(text, ",")
+end
+
+local function parse_tsv_text(text)
+	return parse_delimited_text(text, "\t")
+end
+
 local function format_tsv_field(field)
 	if field:find('["\t\r\n]') then
 		return '"' .. field:gsub('"', '""') .. '"'
 	else
 		return field
 	end
+end
+
+local function format_csv_field(field)
+	if field:find('["\n\r,]') then
+		return '"' .. field:gsub('"', '""') .. '"'
+	else
+		return field
+	end
+end
+
+local function paste_tsv_as_csv(is_visual)
+	local tsv_text = vim.fn.getreg("+")
+	if tsv_text == "" then
+		vim.notify("Clipboard is empty!", vim.log.levels.WARN)
+		return
+	end
+
+	local rows = parse_tsv_text(tsv_text)
+	local csv_lines = {}
+	for _, row in ipairs(rows) do
+		local csv_fields = {}
+		for _, field in ipairs(row) do
+			table.insert(csv_fields, format_csv_field(field))
+		end
+		table.insert(csv_lines, table.concat(csv_fields, ","))
+	end
+	local csv_text = table.concat(csv_lines, "\n")
+
+	local regtype = vim.fn.getregtype("+")
+	local original_reg = vim.fn.getreg("z")
+	local original_regtype = vim.fn.getregtype("z")
+
+	vim.fn.setreg("z", csv_text, regtype)
+	if is_visual then
+		vim.cmd('normal! gv"zp')
+	else
+		vim.cmd('normal! "zp')
+	end
+
+	vim.fn.setreg("z", original_reg, original_regtype)
+	vim.notify("Pasted clipboard as CSV (" .. #csv_lines .. " rows)", vim.log.levels.INFO)
 end
 
 local M = {}
@@ -167,6 +216,15 @@ function M.setup()
 	-- Visual or normal mode mapping: CSV Yank (cy)
 	map("n", "<leader>cy", "<cmd>CsvToTsvCopy<cr>", "Copy CSV as TSV to clipboard")
 	map("x", "<leader>cy", ":CsvToTsvCopy<cr>", "Copy CSV as TSV to clipboard")
+
+	-- Paste TSV selection as CSV
+	vim.api.nvim_create_user_command("TsvToCsvPaste", function()
+		paste_tsv_as_csv(false)
+	end, { desc = "Paste TSV clipboard as CSV" })
+
+	-- Visual or normal mode mapping: TSV Paste (cp)
+	map("n", "<leader>cp", function() paste_tsv_as_csv(false) end, "Paste TSV from clipboard as CSV")
+	map("x", "<leader>cp", function() paste_tsv_as_csv(true) end, "Paste TSV from clipboard as CSV")
 end
 
 return M
