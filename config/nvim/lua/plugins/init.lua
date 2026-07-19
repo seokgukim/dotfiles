@@ -167,26 +167,57 @@ return {
 		end,
 	},
 
+	-- {
+	-- 	"github/copilot.vim",
+	-- 	cmd = "Copilot",
+	-- 	event = "InsertEnter",
+	-- 	init = function()
+	-- 		-- These globals must be set BEFORE the plugin sources its
+	-- 		-- runtime files, otherwise copilot.vim binds <Tab> in insert
+	-- 		-- mode and races with nvim-cmp.
+	-- 		vim.g.copilot_enabled = false
+	-- 		-- vim.g.copilot_no_tab_map = true
+	-- 	end,
+	-- 	config = function()
+	-- 		vim.keymap.set("n", "<leader><f1>", function()
+	-- 			vim.g.copilot_enabled = not vim.g.copilot_enabled
+	-- 			print("Copilot " .. (vim.g.copilot_enabled and "enabled" or "disabled"))
+	-- 		end, { desc = "Toggle Copilot" })
+	-- 	end,
+	-- },
+
 	{
-		"github/copilot.vim",
-		cmd = "Copilot",
-		event = "InsertEnter",
+		"ggml-org/llama.vim",
 		init = function()
-			-- These globals must be set BEFORE the plugin sources its
-			-- runtime files, otherwise copilot.vim binds <Tab> in insert
-			-- mode and races with nvim-cmp.
-			vim.g.copilot_enabled = false
-			-- vim.g.copilot_no_tab_map = true
-		end,
-		config = function()
-			vim.keymap.set("n", "<leader><f1>", function()
-				vim.g.copilot_enabled = not vim.g.copilot_enabled
-				print("Copilot " .. (vim.g.copilot_enabled and "enabled" or "disabled"))
-			end, { desc = "Toggle Copilot" })
+			local endpoints = {
+				"http://localhost:8012",
+				"http://192.168.0.1:8012",
+			}
+			local endpoint = endpoints[#endpoints]
+
+			for _, candidate in ipairs(endpoints) do
+				vim.fn.system({
+					"curl",
+					"--fail",
+					"--silent",
+					"--output",
+					"/dev/null",
+					"--max-time",
+					"0.5",
+					candidate .. "/health",
+				})
+				if vim.v.shell_error == 0 then
+					endpoint = candidate
+					break
+				end
+			end
+
+			vim.g.llama_config = {
+				endpoint_fim = endpoint .. "/infill",
+				endpoint_inst = endpoint .. "/v1/chat/completions",
+			}
 		end,
 	},
-
-	-- "ggml-org/llama.vim",
 
 	{
 		"folke/sidekick.nvim",
