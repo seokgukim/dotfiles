@@ -39,11 +39,11 @@ WORKDIR /home/kawi_test
 # Copy dotfiles
 COPY --chown=kawi_test:kawi_test . /home/kawi_test/dotfiles
 
-# Run the legacy installer with a supported Neovim already on PATH, then verify
+# Run the Unix installer with a supported Neovim already on PATH, then verify
 # the linked config exists.
 WORKDIR /home/kawi_test/dotfiles
-RUN chmod +x scripts/setup.sh && \
-    sudo bash scripts/setup.sh && \
+RUN chmod +x home/unix/setup.sh && \
+    sudo bash home/unix/setup.sh 1 && \
     test -L /home/kawi_test/.config/nvim && \
     test -L /home/kawi_test/.vimrc && \
     nvim --version | head -n 1

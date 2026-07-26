@@ -34,12 +34,13 @@ dotfiles/
 │               ├── lsp.lua         # vim.lsp.config / vim.lsp.enable + diagnostics
 │               ├── formatter.lua   # conform.nvim configuration
 │               └── dap.lua         # Debug Adapter Protocol (kept commented by default)
-├── home/                           # Files that live directly under $HOME
-│   └── .vimrc                      # Traditional Vim configuration
+├── home/                           # Platform-specific home setup
+│   ├── unix/                       # Unix shell/Vim files and package installer
+│   └── win/                        # PowerShell/Vim files and winget installer
 ├── scripts/                        # Installation and setup scripts
 │   ├── install-nix.sh              # User-level Nix installation script
-│   ├── setup.sh                    # Legacy apt/pacman installation script
-│   └── windows-setup.bat           # Windows (winget) installer
+│   ├── markdown-to-pdf.ps1         # Markdown-to-PDF wrapper for PowerShell
+│   └── markdown-to-pdf.sh          # Markdown-to-PDF wrapper for POSIX systems
 ├── nix/
 │   └── packages.nix                # Nix package index for editor/dev tools
 ├── docs/                           # Detailed documentation (you are here)

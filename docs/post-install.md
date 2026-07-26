@@ -16,8 +16,6 @@ if [ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
   . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 fi
 source $HOME/.bashrc
-# Or start Nushell now:
-nu
 ```
 
 ## 2. Verify tool installation

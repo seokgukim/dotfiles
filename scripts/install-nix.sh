@@ -141,6 +141,22 @@ nix_profile_add() {
     fi
 }
 
+link_config() {
+    local source="$1"
+    local target="$2"
+    local backup
+
+    if [ -L "$target" ] && [ "$target" -ef "$source" ]; then
+        return
+    fi
+    if [ -e "$target" ] || [ -L "$target" ]; then
+        backup="${target}.bak-$(date +'%Y%m%d%H%M%S')"
+        log "Moving existing path to $backup"
+        mv "$target" "$backup"
+    fi
+    ln -s "$source" "$target"
+}
+
 download_nix_installer() {
     INSTALLER_FILE="$(mktemp "${TMPDIR:-/tmp}/nix-install.XXXXXX")"
     log "Downloading Nix installer from $NIX_INSTALL_URL"
@@ -206,14 +222,7 @@ fi
 
 log "Linking editor configurations"
 mkdir -p "$HOME/.config"
-ln -sfn "$REPO_ROOT/config/nvim" "$HOME/.config/nvim"
-ln -sfn "$REPO_ROOT/home/.vimrc" "$HOME/.vimrc"
-
-if command -v nu >/dev/null 2>&1; then
-    mkdir -p "$HOME/.config/nushell"
-    if [ ! -f "$HOME/.config/nushell/config.nu" ]; then
-        printf '$env.EDITOR = "nvim"\n$env.VISUAL = "nvim"\n' > "$HOME/.config/nushell/config.nu"
-    fi
-fi
+link_config "$REPO_ROOT/config/nvim" "$HOME/.config/nvim"
+link_config "$REPO_ROOT/home/unix/.vimrc" "$HOME/.vimrc"
 
 log "Nix-based setup completed"

@@ -21,7 +21,7 @@ The installer:
   replaces the existing `seokgukim-dotfiles-tools` profile entry before adding
   it again, so repeated runs stay idempotent on the new CLI as well.
 - Symlinks `config/nvim/` to `~/.config/nvim`
-- Symlinks `home/.vimrc` to `~/.vimrc`
+- Symlinks `home/unix/.vimrc` to `~/.vimrc`
 
 By default, the script picks the installer mode automatically
 (`NIX_INSTALL_MODE=auto`): on Linux hosts with systemd and sudo it uses the
@@ -78,7 +78,7 @@ docker run --rm -v "$PWD":/work -w /work nixos/nix \
 > The script enables `nix-command` per invocation only to use the new `nix`
 > CLI; it does not enable or require flakes.
 
-The Nix index includes Neovim, Nushell, ripgrep, fd, fzf, lazygit, zellij,
+The Nix index includes Neovim, ripgrep, fd, fzf, lazygit, zellij,
 language servers, and formatters used by this Neovim config. GitHub Copilot
 authentication still needs to be completed in Neovim with `:Copilot setup`.
 
@@ -114,26 +114,33 @@ migration path is additive, not a hard cutover:
 Do not introduce Home Manager, nix-darwin, or devenv as part of the initial
 flake step; those are separate scope expansions.
 
-## Legacy: distro package manager install
+## System package manager install
 
-For systems without Nix, the legacy script installs a smaller base tool set
-through apt or pacman. It requires root.
+For systems without Nix, the Unix home installer installs tools through apt,
+pacman, or Homebrew and merges the managed shell profile into `~/.bashrc`.
+The apt and pacman paths request root only for privileged operations; Homebrew
+packages are installed as the current user.
 
 ```bash
 git clone https://github.com/seokgukim/dotfiles.git ~/dotfiles
 cd ~/dotfiles
-sudo bash scripts/setup.sh
+bash home/unix/setup.sh [0|1|2]
 ```
 
 The script will:
 
-- Install essential packages through apt or pacman:
+- Select a package level: `0` for portable shell basics, `1` (default) for the
+  normal development environment, or `2` for the extended tool set
+- Install essential packages through apt, pacman, or Homebrew:
   - **pacman**: `base-devel`, `tree-sitter`, `tree-sitter-cli`, `curl`,
     `tar` so `nvim-treesitter` `main` can build parsers locally.
   - **apt**: `build-essential`, `curl`, `tar` (always); `tree-sitter-cli`
     is best-effort because it is only packaged on recent Ubuntu / Debian
     releases. When apt cannot find it the script logs a hint to install
     it via `cargo install tree-sitter-cli` or `npm i -g tree-sitter-cli`.
+  - **Homebrew**: `git`, `vim`, `neovim`, `ripgrep`, `fd`, `fzf`,
+    `tree-sitter`, and `tree-sitter-cli`. On macOS it also installs the Noto
+    Sans CJK font cask; Linuxbrew skips the macOS-only cask.
 - For apt: prefer the distro `neovim` package when its candidate version is
   `>= 0.12.0`
 - If a compatible `nvim` is already on `PATH`, keep using it and skip apt-side
@@ -146,23 +153,25 @@ The script will:
 - On Debian/non-Ubuntu apt hosts, install Ubuntu language-pack packages only
   when they exist; the script skips that Ubuntu-specific dependency set on
   other apt-based distributions
-- Symlink Neovim config to `~/.config/nvim` and Vim config to `~/.vimrc`
-- Add the user to the `docker` group
+- Merge `home/unix/.bashrc` into a managed block in `~/.bashrc`
+- Symlink Neovim config to `~/.config/nvim` and `home/unix/.vimrc` to `~/.vimrc`
+- On Linux, add the user to the `docker` group; Docker Desktop handles access
+  on macOS
 
 Ubuntu hosts that need the Neovim PPA must opt in explicitly:
 
 ```bash
-sudo ALLOW_NEOVIM_PPA=1 bash scripts/setup.sh
+ALLOW_NEOVIM_PPA=1 bash home/unix/setup.sh
 ```
 
-### Docker validation for the legacy path
+### Docker validation for the system package manager path
 
-The repository-local Docker baseline now exercises `scripts/setup.sh` during the
+The repository-local Docker baseline exercises `home/unix/setup.sh` during the
 image build instead of only preparing the environment. It seeds the container
-with a supported Neovim tarball first, so the legacy installer can validate the
+with a supported Neovim tarball first, so the Unix installer can validate the
 rest of the bootstrap flow without depending on Launchpad PPA reachability. The
-build resolves the latest Neovim release metadata first and verifies the tarball
-checksum before extracting it:
+build resolves the latest Neovim release metadata first and verifies the
+tarball checksum before extracting it:
 
 ```bash
 docker build -f docker/Dockerfile.test .
@@ -172,14 +181,15 @@ docker build -f docker/Dockerfile.test .
 
 ```bat
 git clone https://github.com/seokgukim/dotfiles.git %USERPROFILE%\dotfiles
-%USERPROFILE%\dotfiles\scripts\windows-setup.bat
+powershell -ExecutionPolicy Bypass -File %USERPROFILE%\dotfiles\home\win\setup.ps1
 ```
 
-The Windows script uses `winget` to install Neovim and Nushell, then links the
-canonical `config/nvim/` directory into `%LOCALAPPDATA%\nvim`.
+The Windows script uses `winget` to install the selected package level, merges
+the managed PowerShell profile block, and links `config/nvim` into
+`%LOCALAPPDATA%\nvim`.
 
 ## Requirements
 
-- Linux system with Nix, or apt/pacman for the legacy script
-- Root access only for the legacy script
+- Linux system with Nix, apt/pacman, or Linuxbrew; or macOS with Homebrew
+- Root access for apt/pacman and Linux Docker-group setup
 - Internet connection for downloading dependencies

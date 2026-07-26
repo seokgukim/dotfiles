@@ -31,7 +31,6 @@ pkgs.buildEnv {
     typescript
     typescript-language-server
     vscode-langservers-extracted
-    nushell
     ripgrep
     ruby
     rubyPackages.rubocop
