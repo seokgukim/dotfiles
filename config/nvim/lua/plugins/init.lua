@@ -189,28 +189,11 @@ return {
 	{
 		"ggml-org/llama.vim",
 		init = function()
-			local endpoints = {
-				"http://localhost:8012",
-				"http://192.168.0.1:8012",
-			}
-			local endpoint = endpoints[#endpoints]
-
-			for _, candidate in ipairs(endpoints) do
-				vim.fn.system({
-					"curl",
-					"--fail",
-					"--silent",
-					"--output",
-					"/dev/null",
-					"--max-time",
-					"0.5",
-					candidate .. "/health",
-				})
-				if vim.v.shell_error == 0 then
-					endpoint = candidate
-					break
-				end
+			local endpoint = vim.env.LLAMA_LOCAL_ENDPOINT
+			if not endpoint or endpoint == "" then
+				endpoint = "http://localhost:8012"
 			end
+			endpoint = endpoint:gsub("/+$", "")
 
 			vim.g.llama_config = {
 				endpoint_fim = endpoint .. "/infill",
