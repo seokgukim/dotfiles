@@ -10,18 +10,16 @@
 
 # EDIT
 
-- NO UNREQUESTED COMMIT
+- NO UNASKED COMMIT
 - MINIMAL EDIT
+- DESIGN PUBLIC ONES FIRST
+- SEPARATE TEST AND IMPLEMENTATION
 - THINK TWICE BEFORE APPLY PATCH
 - NO CR; USE LF
-- NO UNREQUESTED NON-ASCII CHARACTERS
+- ONLY ASCII 0x09-0x0A, 0x20-0x7E ARE ALLOWED BY DEFAULT
 - KEEP CONVENTION
-
-# ENV
-
-- Shell: `pwsh`
-- Tools: `rg`, `fd`, `busybox`, `sed`, `awk`, `grep`, `head`, `tail`, `wc`, `ls`, etc.
 
 # NOTES
 
-- Tool use: `-h`, `-help`, `--help` in the first turn
+- Tool use: Built-in first, `-h`, `-help`, `--help` in the first turn
+- Tools: `rg`, `fd`, `awk`, `grep`, `head`, `tail`, `wc`, `ls`, etc.
