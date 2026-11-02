@@ -134,10 +134,10 @@ The script will:
 - Install essential packages through apt, pacman, or Homebrew:
   - **pacman**: `base-devel`, `tree-sitter`, `tree-sitter-cli`, `curl`,
     `tar` so `nvim-treesitter` `main` can build parsers locally.
-  - **apt**: `build-essential`, `curl`, `tar` (always); `tree-sitter-cli`
-    is best-effort because it is only packaged on recent Ubuntu / Debian
-    releases. When apt cannot find it the script logs a hint to install
-    it via `cargo install tree-sitter-cli` or `npm i -g tree-sitter-cli`.
+  - **apt**: `build-essential`, Node.js, and npm at level 1 or higher;
+    installs `tree-sitter-cli` with npm under `~/.local` if it is not already
+    available. The managed Bash profile adds `~/.local/bin` to PATH; other
+    shells must add it themselves.
   - **Homebrew**: `git`, `vim`, `neovim`, `ripgrep`, `fd`, `fzf`,
     `tree-sitter`, and `tree-sitter-cli`. On macOS it also installs the Noto
     Sans CJK font cask; Linuxbrew skips the macOS-only cask.
@@ -155,14 +155,32 @@ The script will:
   other apt-based distributions
 - Merge `home/unix/.bashrc` into a managed block in `~/.bashrc`
 - Symlink Neovim config to `~/.config/nvim` and `home/unix/.vimrc` to `~/.vimrc`
-- On Linux, add the user to the `docker` group; Docker Desktop handles access
-  on macOS
+- On Linux, add the user to the `docker` group only when explicitly requested
+  with `ENABLE_DOCKER_GROUP=1`; Docker Desktop handles access on macOS
+
+Access to a rootful Docker daemon is effectively root access. Opt in only if
+that is appropriate for your machine, then log out and back in:
+
+```bash
+ENABLE_DOCKER_GROUP=1 bash home/unix/setup.sh
+```
+
+`home/unix/setup.sh` is the recommended system-package installer. The older
+`scripts/setup.sh` is a separate apt/pacman-only bootstrap. It installs system
+packages, generates locales on apt systems, and backs up and links the Neovim
+and Vim configuration; it does not configure the shell profile. It requires
+root access (directly or through sudo) for package and locale operations and
+also accepts `ENABLE_DOCKER_GROUP=1`.
 
 Ubuntu hosts that need the Neovim PPA must opt in explicitly:
 
 ```bash
 ALLOW_NEOVIM_PPA=1 bash home/unix/setup.sh
 ```
+
+For a fast mocked installer check on Linux without pacman, run
+`bash scripts/test-unix-setup.sh`. It uses a temporary home and mocks package
+and privilege commands; it does not validate real package installation.
 
 ### Docker validation for the system package manager path
 

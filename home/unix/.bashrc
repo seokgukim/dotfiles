@@ -7,6 +7,10 @@ export VISUAL="nvim"
 export AGENT_WORKSPACE="$HOME/_agent"
 export PYTHONUTF8=1
 
+if [ -d "$HOME/.local/bin" ]; then
+	export PATH="$HOME/.local/bin:$PATH"
+fi
+
 if [ -d "$HOME/.cargo/bin" ]; then
 	export PATH="$HOME/.cargo/bin:$PATH"
 fi

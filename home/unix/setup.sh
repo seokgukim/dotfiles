@@ -313,7 +313,7 @@ case "$manager" in
 		packages+=(curl tar xz-utils unzip wget vim busybox)
 		run_root apt-get update
 		if [ "$LEVEL" -ge 1 ]; then
-			packages+=(git nodejs python3 python3-pip python3-venv docker.io tmux fzf fd-find ripgrep bat build-essential locales fonts-noto-cjk)
+			packages+=(git nodejs npm python3 python3-pip python3-venv docker.io tmux fzf fd-find ripgrep bat build-essential locales fonts-noto-cjk)
 			for compose_package in docker-compose-plugin docker-compose-v2 docker-compose; do
 				if apt-cache show "$compose_package" >/dev/null 2>&1; then
 					packages+=("$compose_package")
@@ -356,8 +356,10 @@ install_packages "$manager" "${packages[@]}"
 
 if [ "$manager" = apt ] && [ "$LEVEL" -ge 1 ]; then
 	run_root locale-gen en_US.UTF-8 ko_KR.UTF-8 ja_JP.UTF-8
-	run_root apt-get install -y tree-sitter-cli >/dev/null 2>&1 \
-		|| log "tree-sitter-cli is unavailable from apt; install it with cargo or npm"
+	if ! run_as_target sh -c 'command -v tree-sitter >/dev/null 2>&1 || test -x "$HOME/.local/bin/tree-sitter"'; then
+		log "Installing tree-sitter-cli with npm for $TARGET_USER"
+		run_as_target npm install --global --prefix "$TARGET_HOME/.local" tree-sitter-cli
+	fi
 fi
 
 if [ "$manager" = brew ] && [ "$LEVEL" -ge 1 ] && [ "$OS_NAME" = Darwin ]; then
@@ -379,7 +381,8 @@ sync_managed_block "$TARGET_BASHRC" "$SOURCE_BASHRC"
 link_config "$REPO_ROOT/config/nvim" "$TARGET_HOME/.config/nvim"
 link_config "$SOURCE_VIMRC" "$TARGET_HOME/.vimrc"
 
-if [ "$OS_NAME" = Linux ] && [ "$LEVEL" -ge 1 ]; then
+# Access to a rootful Docker daemon is effectively root access; opt in explicitly.
+if [ "$OS_NAME" = Linux ] && [ "$LEVEL" -ge 1 ] && [ "${ENABLE_DOCKER_GROUP:-0}" = 1 ]; then
 	if ! getent group docker >/dev/null; then
 		run_root groupadd docker
 	fi
