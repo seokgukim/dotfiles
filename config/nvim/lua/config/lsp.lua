@@ -7,6 +7,7 @@ local servers = {
 	bashls = "bash-language-server",
 	clangd = "clangd",
 	cssls = "vscode-css-language-server",
+	csharp_ls = "csharp-ls",
 	html = "vscode-html-language-server",
 	jsonls = "vscode-json-language-server",
 	lua_ls = "lua-language-server",

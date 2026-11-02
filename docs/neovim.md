@@ -38,6 +38,7 @@ plugins were removed:
 
 | Language | Server | Formatter |
 | --- | --- | --- |
+| C# | `csharp_ls` | `dotnet format whitespace` (follows `.editorconfig`) |
 | TypeScript / JavaScript | `ts_ls` | prettier |
 | HTML / CSS / JSON | vscode-langservers-extracted | prettier |
 | Python | `pyright` | black, isort |
@@ -60,10 +61,12 @@ plugins were removed:
 - Clipboard integration is via `vim.opt.clipboard = "unnamedplus"`. There are
   no system-clipboard leader maps by design.
 - Neovim 0.12 default LSP keymaps (`gra`, `gri`, `grn`, `grr`, `grt`, `grx`,
-  `i_CTRL-S`) are kept; `keymaps.lua` only adds non-default mappings.
+  `i_CTRL-S`) are kept. Buffer-local Vim-style LSP maps use `gd` for definition,
+  `gD` for declaration, `gi` for implementation, `gr` for references,
+  `<leader>rn` for rename, and `<leader>ca` for code actions. Additional
+  `<leader>l*` maps only bind methods advertised by an attached server; late
+  dynamic registrations refresh them.
 - Leader prefix split: `<leader>g*` is reserved for Git (`gg` lazygit,
-  `gB` gitbrowse), and LSP picker mappings are under `<leader>l*`
-  (`ld` definitions, `lr` references, `li` implementations, `ls` symbols).
-  `mlua.nvim`'s formatter is bound to `<leader>lf`.
+  `gB` gitbrowse); extended LSP actions are under `<leader>l*`.
 - Snacks surfaces: `<leader>e` explorer, `<leader>tt` terminal, `<leader>z`
   zen, `<leader>.` scratch, `<leader>ut`/`<leader>ud` toggles.

@@ -145,11 +145,103 @@ function M.setup()
 	map("n", "<leader>fr", function() Snacks.picker.recent() end, "Recent Files")
 	map("n", "<leader>fp", function() Snacks.picker.projects() end, "Projects")
 
-	-- LSP via Snacks (kept under <leader>l* so that <leader>g* stays Git-only).
-	map("n", "<leader>ld", function() Snacks.picker.lsp_definitions() end, "Goto Definition")
-	map("n", "<leader>lr", function() Snacks.picker.lsp_references() end, "References")
-	map("n", "<leader>li", function() Snacks.picker.lsp_implementations() end, "Implementation")
-	map("n", "<leader>ls", function() Snacks.picker.lsp_symbols() end, "LSP Symbols")
+	-- Add buffer-local maps only for advertised LSP methods. Some servers
+	-- register capabilities after the initial LspAttach.
+	local lsp_maps = {
+		{ "n", "gd", "textDocument/definition", vim.lsp.buf.definition, "LSP Definition" },
+		{ "n", "gD", "textDocument/declaration", vim.lsp.buf.declaration, "LSP Declaration" },
+		{ "n", "gi", "textDocument/implementation", vim.lsp.buf.implementation, "LSP Implementation" },
+		{ "n", "gr", "textDocument/references", vim.lsp.buf.references, "LSP References" },
+		{ "n", "<leader>lw", "workspace/symbol", vim.lsp.buf.workspace_symbol, "LSP Workspace Symbols" },
+		{ "n", "<leader>rn", "textDocument/rename", vim.lsp.buf.rename, "LSP Rename" },
+		{ { "n", "x" }, "<leader>ca", "textDocument/codeAction", vim.lsp.buf.code_action, "LSP Code Action" },
+		{
+			"n",
+			"<leader>lf",
+			"textDocument/formatting",
+			function() vim.lsp.buf.format({ async = true }) end,
+			"LSP Format",
+		},
+		{
+			"n",
+			"<leader>lI",
+			"textDocument/inlayHint",
+			function()
+				vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), { bufnr = 0 })
+			end,
+			"Toggle LSP Inlay Hints",
+		},
+		{
+			"n",
+			"<leader>lc",
+			"textDocument/codeLens",
+			vim.lsp.codelens.run,
+			"Run LSP Code Lens",
+		},
+		{
+			"n",
+			"<leader>lC",
+			"textDocument/codeLens",
+			function() vim.lsp.codelens.refresh({ bufnr = 0 }) end,
+			"Refresh LSP Code Lens",
+		},
+		{ "n", "<leader>lci", "textDocument/prepareCallHierarchy", vim.lsp.buf.incoming_calls, "Incoming Calls" },
+		{ "n", "<leader>lco", "textDocument/prepareCallHierarchy", vim.lsp.buf.outgoing_calls, "Outgoing Calls" },
+		{
+			"n",
+			"<leader>lts",
+			"textDocument/prepareTypeHierarchy",
+			function() vim.lsp.buf.typehierarchy("supertypes") end,
+			"LSP Supertypes",
+		},
+		{
+			"n",
+			"<leader>ltt",
+			"textDocument/prepareTypeHierarchy",
+			function() vim.lsp.buf.typehierarchy("subtypes") end,
+			"LSP Subtypes",
+		},
+		{ "n", "<leader>lH", "textDocument/documentHighlight", vim.lsp.buf.document_highlight, "LSP Document Highlight" },
+		{ "n", "<leader>lX", "textDocument/documentHighlight", vim.lsp.buf.clear_references, "Clear LSP Highlights" },
+		{ "n", "<leader>le", "", vim.diagnostic.open_float, "Line Diagnostics" },
+		{ "n", "<leader>lp", "", vim.diagnostic.goto_prev, "Previous Diagnostic" },
+		{ "n", "<leader>ln", "", vim.diagnostic.goto_next, "Next Diagnostic" },
+		{ "n", "<leader>lq", "", function() vim.diagnostic.setloclist({ open = true }) end, "Diagnostics List" },
+	}
+
+	local function attach_lsp_keymaps(client, bufnr)
+		for _, entry in ipairs(lsp_maps) do
+			local mode, lhs, method, rhs, desc = unpack(entry)
+			if method == "" or client:supports_method(method, bufnr) then
+				vim.keymap.set(mode, lhs, function()
+					rhs()
+				end, { buffer = bufnr, desc = desc })
+			end
+		end
+	end
+
+	local lsp_group = vim.api.nvim_create_augroup("dotfiles_lsp_keymaps", { clear = true })
+	vim.api.nvim_create_autocmd("LspAttach", {
+		group = lsp_group,
+		callback = function(args)
+			local client = vim.lsp.get_client_by_id(args.data.client_id)
+			if client then
+				attach_lsp_keymaps(client, args.buf)
+			end
+		end,
+	})
+
+	local register_capability = vim.lsp.handlers["client/registerCapability"]
+	vim.lsp.handlers["client/registerCapability"] = function(err, result, ctx)
+		local response = register_capability(err, result, ctx)
+		local client = ctx and vim.lsp.get_client_by_id(ctx.client_id)
+		if client then
+			for bufnr in pairs(client.attached_buffers) do
+				attach_lsp_keymaps(client, bufnr)
+			end
+		end
+		return response
+	end
 
 	-- Snacks UI surfaces
 	map("n", "<leader>e", function() Snacks.explorer() end, "File Explorer")
@@ -193,6 +285,9 @@ function M.setup()
 	-- Git
 	map("n", "<leader>gg", function() Snacks.lazygit() end, "Lazygit")
 	map("n", "<leader>gB", function() Snacks.gitbrowse() end, "Git Browse")
+	map("n", "]h", function() require("gitsigns").nav_hunk("next") end, "Next Hunk")
+	map("n", "[h", function() require("gitsigns").nav_hunk("prev") end, "Prev Hunk")
+	map("n", "<leader>gp", function() require("gitsigns").preview_hunk() end, "Preview Hunk")
 
 	-- Copy CSV selection as TSV to clipboard
 	vim.api.nvim_create_user_command("CsvToTsvCopy", function(opts)

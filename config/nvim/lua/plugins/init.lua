@@ -47,8 +47,8 @@ return {
 		build = ":TSUpdate",
 		config = function()
 			local parsers = {
-				"bash", "c", "cpp", "css", "html", "javascript", "json",
-				"lua", "markdown", "markdown_inline", "nix", "python",
+				"bash", "c", "c_sharp", "cpp", "css", "html", "javascript",
+				"json", "lua", "markdown", "markdown_inline", "nix", "python",
 				"query", "ruby", "toml", "tsx", "typescript", "vim",
 				"vimdoc", "yaml",
 			}
@@ -126,37 +126,37 @@ return {
 	},
 
 	-- seokgukim-authored plugins are intentionally kept.
-	{
-		"seokgukim/mlua.nvim",
-		branch = "dev",
-		config = function()
-			require("mlua").setup({
-				keymaps = {
-					hover = "K",
-					definition = "gd",
-					references = "gr",
-					declaration = false,
-					implementation = false,
-					rename = "<leader>rn",
-					code_action = "<leader>ca",
-					format = "<leader>lf",
-					toggle_inlay_hints = false,
-				},
-			})
-		end,
-	},
-	{
-		"seokgukim/mlua-debugger.nvim",
-		branch = "dev",
-		cond = function()
-			return is_windows
-		end,
-		config = function()
-			require("mlua-debugger").setup({
-				deprecated_commands = false,
-			})
-		end,
-	},
+	-- {
+	-- 	"seokgukim/mlua.nvim",
+	-- 	branch = "dev",
+	-- 	config = function()
+	-- 		require("mlua").setup({
+	-- 			keymaps = {
+	-- 				hover = "K",
+	-- 				definition = "gd",
+	-- 				references = "gr",
+	-- 				declaration = false,
+	-- 				implementation = false,
+	-- 				rename = "<leader>rn",
+	-- 				code_action = "<leader>ca",
+	-- 				format = "<leader>lf",
+	-- 				toggle_inlay_hints = false,
+	-- 			},
+	-- 		})
+	-- 	end,
+	-- },
+	-- {
+	-- 	"seokgukim/mlua-debugger.nvim",
+	-- 	branch = "dev",
+	-- 	cond = function()
+	-- 		return is_windows
+	-- 	end,
+	-- 	config = function()
+	-- 		require("mlua-debugger").setup({
+	-- 			deprecated_commands = false,
+	-- 		})
+	-- 	end,
+	-- },
 	{
 		"seokgukim/vawi.nvim",
 		cond = function()
